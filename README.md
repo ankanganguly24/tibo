@@ -53,6 +53,27 @@ Tibo treats context as an engineering resource. It should be selected, measured,
 
 ## What Tibo does
 
+Tibo has three connected modes. They share the same repository map, decision record, context budget, and evidence model.
+
+### 0. Structure a problem
+
+Before asking an agent to build, a developer can bring Tibo a vague problem:
+
+> “Users keep abandoning checkout. What should we change?”
+
+Tibo turns it into a reviewable problem brief:
+
+- Desired outcome
+- User and affected workflow
+- Known facts and missing evidence
+- Constraints
+- Candidate approaches
+- Risks and trade-offs
+- Smallest useful next experiment
+- Questions that need a human decision
+
+Tibo separates facts from assumptions instead of manufacturing certainty to produce a plan.
+
 ### 1. Builds a repository map
 
 Tibo inspects the repository locally and records useful structure:
@@ -67,7 +88,24 @@ Tibo inspects the repository locally and records useful structure:
 
 It does not upload the repository to a Tibo server.
 
-### 2. Compiles a task packet
+### 2. Learn from the project
+
+Tibo can also be used as a project-aware learning companion. A developer can ask:
+
+> “Teach me how authentication works in this repository. Start with the request path and show me which files to read first.”
+
+Tibo should answer from the repository’s actual code and recorded decisions, then produce:
+
+- A short explanation at the requested level
+- A map from concepts to files and symbols
+- A worked example from the project
+- A small exercise or investigation prompt
+- A way to check the learner’s understanding
+- Sources and uncertainty markers
+
+Learning is grounded in the project so a developer can move from understanding to a safe change without rebuilding context.
+
+### 3. Compiles a task packet
 
 Given a task such as:
 
@@ -98,13 +136,13 @@ Required checks:      npm test, npm run typecheck
 Open decision:        reuse token table or create a new model
 ```
 
-### 3. Keeps Codex inside the task boundary
+### 4. Keeps Codex inside the task boundary
 
 Tibo provides repository instructions and a Codex workflow for using the packet, recording assumptions, and stopping when a real decision is missing.
 
 The agent remains responsible for reasoning and implementation. Tibo is responsible for making the work boundary visible and measurable.
 
-### 4. Produces a verification receipt
+### 5. Produces a verification receipt
 
 After the agent changes the repository, Tibo checks:
 
@@ -117,7 +155,7 @@ After the agent changes the repository, Tibo checks:
 
 The output is evidence, not a claim that the agent “did a good job.”
 
-### 5. Creates a handoff packet
+### 6. Creates a handoff packet
 
 The next session or engineer should not need to reconstruct the entire conversation. Tibo records:
 
@@ -132,6 +170,8 @@ The next session or engineer should not need to reconstruct the entire conversat
 
 ```bash
 tibo init
+tibo problem "add password reset without changing the authentication model"
+tibo learn "explain the authentication request path"
 tibo scope "add password reset using the existing authentication patterns"
 tibo verify
 tibo handoff
@@ -183,6 +223,17 @@ Tibo will publish fixture versions, task descriptions, assumptions, and limitati
 7. Tibo writes a handoff packet for the next session.
 ```
 
+The same loop works for learning:
+
+```text
+question
+  -> identify relevant project context
+  -> explain the concept from source
+  -> link explanation to files and decisions
+  -> ask a small checking question
+  -> suggest the safest next experiment
+```
+
 ## Design principles
 
 1. **Local by default.** Repository content stays on the developer’s machine.
@@ -192,12 +243,14 @@ Tibo will publish fixture versions, task descriptions, assumptions, and limitati
 5. **Decisions are first-class artifacts.** Unresolved choices should be visible instead of silently guessed.
 6. **The repository is the handoff boundary.** Important state should survive a new session and a new engineer.
 7. **No magic completion.** Tibo never marks work complete only because code was generated.
+8. **Learning should lead somewhere.** A lesson ends with understanding that can be checked or applied, not a wall of generated prose.
 
 ## Status
 
 This repository is the product and engineering baseline. The implementation is intentionally starting with a narrow vertical slice:
 
 - Repository scanner
+- Problem brief and project-grounded learning modes
 - Context packet compiler
 - Token estimate and benchmark fixtures
 - Git diff scope checks
