@@ -1,320 +1,118 @@
 # Tibo
 
-## The smallest useful context for your coding agent.
+**Your coding agent makes decisions you never approved.**
+Tibo lists them.
 
-Tibo is a local-first, Codex-first workflow assistant for solo engineers and vibe coders.
+> **Trust, but observe.**
 
-It helps a coding agent answer four questions before and after a change:
+~~~text
+$ tibo
 
-1. **What is the smallest part of this repository I need to understand?**
-2. **What decisions and constraints must I preserve?**
-3. **Did the change stay within the requested scope?**
-4. **What evidence proves that the work is ready to hand off?**
+3 unconfirmed decisions
 
-Tibo exists because AI coding gets expensive and unreliable in a predictable way: the repository grows, the context gets noisy, the agent starts guessing, and every new session repeats the same explanation.
+  1. dependency added      nodemailer ^6.9
+     src/email/send.ts · not present before this change
 
-Tibo turns a task into a compact, inspectable work packet and turns the resulting change into a verification receipt.
+  2. new environment var   SMTP_FROM
+     src/email/config.ts · read at startup, no default
 
-```text
-task
-  -> repository map
-  -> relevant context packet
-  -> Codex implementation
-  -> scoped diff and checks
-  -> verification receipt
-  -> handoff packet
-```
+  3. parallel module       src/utils/mail.ts
+     duplicates the role of src/email/send.ts
 
-## Who this is for
+  [k] keep  [r] reject  [l] later  [w] why
+~~~
 
-Tibo is for:
+Nothing leaves your machine. No account, API key, or model call is required.
 
-- Solo engineers building products with Codex
-- Vibe coders whose projects have become too large for ad hoc prompting
-- Small teams sharing work between coding-agent sessions
-- Developers who want speed without losing ownership of decisions
+~~~bash
+npx tibo
+~~~
 
-Tibo is not a hosted coding agent, an IDE replacement, or a project-management system. It works beside the tools you already use and keeps the important state in your repository.
+## Why
 
-## The problem
+The failure everyone notices is the agent writing bad code. You see it and fix it.
 
-AI coding agents are good at producing code. They are less reliable at preserving the invisible context around that code:
+The expensive failure is the agent writing reasonable code that quietly makes a decision: a library you did not choose, a schema change you did not discuss, a new environment variable, or a second implementation of something the project already has. Each choice can pass review. The risk appears later, when nobody remembers who made the decision or whether it was intentional.
 
-- Existing architecture and patterns
-- Decisions made in previous sessions
-- Commands that actually verify the project
-- Files that are in scope versus files that are merely nearby
-- Constraints that should stop an implementation from improvising
-- The difference between “the command passed” and “the feature is correct”
+This problem is becoming more visible as agent-written code increases. A 2026 study of roughly 33,000 agent-authored pull requests found recurring rejection patterns including agent misalignment, duplicate work, and unwanted feature implementations ([study](https://arxiv.org/abs/2601.15195)). Faros AI's 2026 telemetry across 22,000 developers and 4,000 teams reported higher throughput alongside increases in bugs, incidents, review time, and code churn ([report](https://www.faros.ai/research/ai-acceleration-whiplash)).
 
-Most teams respond by adding more instructions, more Markdown, and longer prompts. That can create a second problem: context itself becomes a source of noise, cost, and drift.
+Tibo addresses the decision layer. It reads a Git diff, detects structural signals, names the decisions it can support with evidence, and asks you to keep, reject, or defer each one. Confirmed decisions become a small ledger that the next session can read without making you explain the project again.
 
-Tibo treats context as an engineering resource. It should be selected, measured, refreshed, and verified.
+## What Tibo detects
 
-## What Tibo does
+- New or changed dependencies
+- New environment variables and configuration reads
+- Schema and persistence changes
+- New modules that overlap existing responsibilities
+- Changed public interfaces and integration boundaries
+- Files that changed outside the declared task scope
+- Decisions you explicitly confirm, reject, or defer
 
-Tibo has three connected modes. They share the same repository map, decision record, context budget, and evidence model.
+Detection is structural and local. Tibo reports evidence and uncertainty; it does not pretend that a heuristic is proof of intent.
 
-### 0. Structure a problem
+## What Tibo does not do
 
-Before asking an agent to build, a developer can bring Tibo a vague problem:
+- It does not read your code with a model.
+- It does not require tests, although tests are useful evidence when they exist.
+- It does not tell you that a change is good. It tells you what changed and what you agreed to.
+- It does not replace code review or architectural judgment.
+- It does not require a new workflow, account, dashboard, or hosted service.
+- It never says “done” merely because a command passed.
 
-> “Users keep abandoning checkout. What should we change?”
+## Who it is for
 
-Tibo turns it into a reviewable problem brief:
+- Solo engineers using Codex or another coding agent
+- Vibe coders whose projects have outgrown one-shot prompting
+- Small teams that need decisions to survive between sessions
+- Maintainers who want a quieter, more useful review surface
 
-- Desired outcome
-- User and affected workflow
-- Known facts and missing evidence
-- Constraints
-- Candidate approaches
-- Risks and trade-offs
-- Smallest useful next experiment
-- Questions that need a human decision
+## The ledger
 
-Tibo separates facts from assumptions instead of manufacturing certainty to produce a plan.
+The ledger is Tibo's durable artifact. It records only decisions that matter to future work:
 
-### 1. Builds a repository map
+~~~yaml
+- id: dependency.mailer
+  decision: keep
+  subject: nodemailer@^6.9
+  evidence:
+    - src/email/send.ts
+  reason: "Chosen for the existing SMTP adapter"
+  confirmed_at: 2026-09-18
+~~~
 
-Tibo inspects the repository locally and records useful structure:
+The next agent session reads the confirmed choices and unresolved questions. The ledger should get smaller and more useful over time, not become another project manual.
 
-- Languages and frameworks
-- Package scripts and test commands
-- Application entry points
-- Existing configuration
-- Important domains and modules
-- Current Git state
-- Project instructions and decisions
+## Scope
 
-It does not upload the repository to a Tibo server.
-
-### 2. Learn from the project
-
-Tibo can also be used as a project-aware learning companion. A developer can ask:
-
-> “Teach me how authentication works in this repository. Start with the request path and show me which files to read first.”
-
-Tibo should answer from the repository’s actual code and recorded decisions, then produce:
-
-- A short explanation at the requested level
-- A map from concepts to files and symbols
-- A worked example from the project
-- A small exercise or investigation prompt
-- A way to check the learner’s understanding
-- Sources and uncertainty markers
-
-Learning is grounded in the project so a developer can move from understanding to a safe change without rebuilding context.
-
-### 3. Compiles a task packet
-
-Given a task such as:
-
-> Add password reset using the existing authentication patterns. Do not change the database model without asking.
-
-Tibo creates a small packet containing:
-
-- Goal and acceptance criteria
-- Relevant files and why they matter
-- Existing patterns to follow
-- Commands to run
-- Known constraints
-- Open decisions
-- Estimated context size
-
-Example:
-
-```text
-Tibo task packet
-
-Selected files:       14
-Repository files:     400
-Estimated context:    5,240 tokens
-Excluded from packet: 386 files
-
-Found pattern:        src/auth/tokens.ts
-Required checks:      npm test, npm run typecheck
-Open decision:        reuse token table or create a new model
-```
-
-### 4. Keeps Codex inside the task boundary
-
-Tibo provides repository instructions and a Codex workflow for using the packet, recording assumptions, and stopping when a real decision is missing.
-
-The agent remains responsible for reasoning and implementation. Tibo is responsible for making the work boundary visible and measurable.
-
-### 5. Produces a verification receipt
-
-After the agent changes the repository, Tibo checks:
-
-- Acceptance criteria
-- Changed-file scope
-- Required commands
-- Test and typecheck results
-- Unresolved assumptions
-- Potential context or architecture drift
-
-The output is evidence, not a claim that the agent “did a good job.”
-
-### 6. Creates a handoff packet
-
-The next session or engineer should not need to reconstruct the entire conversation. Tibo records:
-
-- What changed
-- Why it changed
-- Which decisions were made
-- Which checks passed
-- What remains uncertain
-- The next safe action
-
-## The first user experience
-
-```bash
-tibo init
-tibo problem "add password reset without changing the authentication model"
-tibo learn "explain the authentication request path"
-tibo scope "add password reset using the existing authentication patterns"
-tibo verify
-tibo handoff
-```
-
-The first release is deliberately local and deterministic. It should work without a paid model API, hosted database, or Tibo account.
-
-## Why Codex first
-
-Tibo is designed around Codex’s repository workflow:
-
-- `AGENTS.md` provides project-level instructions
-- A Tibo skill explains the scope → context → implementation → verification loop
-- A local CLI performs deterministic repository analysis
-- Generated packets and receipts remain reviewable files
-- A future MCP adapter can expose repository-map and receipt queries interactively
-
-The CLI is the source of truth. A native Codex plugin or MCP server can come later without changing the repository artifacts.
-
-## Context efficiency
-
-Tibo’s primary metric is context reduction:
-
-```text
-context reduction =
-1 - selected context tokens / baseline context tokens
-```
-
-The benchmark must also report:
-
-- Task completion rate
-- Relevant-file precision
-- Unrelated-file change rate
-- Verification pass rate
-- Handoff recovery time
-- Estimated context and output tokens
-
-Tibo will publish fixture versions, task descriptions, assumptions, and limitations with every benchmark. It will not claim savings from an unreproducible screenshot.
-
-## Example workflow
-
-```text
-1. A developer asks for a feature.
-2. Tibo maps the repository and identifies likely entry points.
-3. Tibo creates a compact task packet.
-4. Codex reads the packet and implements the task.
-5. Tibo inspects the diff and runs the required checks.
-6. Tibo reports what passed, what changed unexpectedly, and what remains open.
-7. Tibo writes a handoff packet for the next session.
-```
-
-The same loop works for learning:
-
-```text
-question
-  -> identify relevant project context
-  -> explain the concept from source
-  -> link explanation to files and decisions
-  -> ask a small checking question
-  -> suggest the safest next experiment
-```
-
-## Design principles
-
-1. **Local by default.** Repository content stays on the developer’s machine.
-2. **Small context beats large context.** More files do not automatically mean more understanding.
-3. **The agent can reason; the tool must measure.** Tibo should not pretend a prompt is an enforcement mechanism.
-4. **Evidence beats confidence.** A completed command and a checked criterion are different things.
-5. **Decisions are first-class artifacts.** Unresolved choices should be visible instead of silently guessed.
-6. **The repository is the handoff boundary.** Important state should survive a new session and a new engineer.
-7. **No magic completion.** Tibo never marks work complete only because code was generated.
-8. **Learning should lead somewhere.** A lesson ends with understanding that can be checked or applied, not a wall of generated prose.
+Tibo starts with TypeScript and JavaScript repositories. The first release is a small CLI with deterministic output, a reviewable ledger, and Git-aware diff analysis. Codex integration is first-class through repository artifacts such as AGENTS.md; other agents can consume the same files.
 
 ## Status
 
-This repository is the product and engineering baseline. The implementation is intentionally starting with a narrow vertical slice:
+Pre-1.0 and honest about it. The product direction is defined; detection and ledger mechanics are being built in public. See the [roadmap](docs/roadmap.md).
 
-- Repository scanner
-- Problem brief and project-grounded learning modes
-- Context packet compiler
-- Token estimate and benchmark fixtures
-- Git diff scope checks
-- Verification receipt
-- Handoff packet
-- Codex project instructions
+## Documentation
 
-The first target is a useful 15-day release with the quality bar of a much larger project: clear contracts, deterministic fixtures, meaningful tests, and honest limitations.
+- [Product brief](docs/product-brief.md)
+- [Architecture](docs/architecture.md)
+- [Principles](docs/principles.md)
+- [Roadmap](docs/roadmap.md)
+- [Decision fixtures](docs/decisions/)
+- [Contributing](CONTRIBUTING.md)
 
-## Non-goals
+## Development direction
 
-- Replacing Codex, Claude Code, Cursor, or an IDE
-- Building another general-purpose agent runtime
-- Uploading repositories to a hosted Tibo service
-- Generating enormous project documentation for its own sake
-- Claiming that context files alone solve software quality
-- Making autonomous changes without a visible diff and verification step
+The first implementation should prove one narrow loop:
 
-## Roadmap
+~~~text
+git diff
+  -> structural signals
+  -> evidence-backed decision list
+  -> keep / reject / later
+  -> durable ledger
+  -> next-session context
+~~~
 
-### Phase 1 — Local proof
-
-- Repository scanner
-- Task packet format
-- File relevance rules
-- Token estimation
-- CLI output
-
-### Phase 2 — Verification
-
-- Acceptance criteria
-- Git diff scope checks
-- Test and typecheck execution
-- Verification receipts
-- Failure fixtures
-
-### Phase 3 — Codex workflow
-
-- `AGENTS.md` bootstrap
-- Tibo Codex skill
-- Session handoff
-- Decision and assumption tracking
-
-### Phase 4 — Quality and adoption
-
-- Golden repository benchmark
-- Context reduction report
-- Drift detection
-- GitHub Actions
-- Cross-agent adapters
-- Optional MCP integration
-
-## Contributing
-
-Tibo is built in public. Contributions should make the workflow more useful, more measurable, or more trustworthy.
-
-Before proposing a feature, explain:
-
-- Which developer pain it solves
-- Why the pain cannot be handled by existing repository instructions
-- What deterministic evidence will show that it works
-- How it affects context size, correctness, or handoff
-
-See [CONTRIBUTING.md](CONTRIBUTING.md).
+No hosted service is needed for that loop. A future integration may add richer language assistance, but the ledger must remain understandable and usable without a model.
 
 ## License
 

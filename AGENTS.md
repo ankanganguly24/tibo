@@ -2,18 +2,20 @@
 
 ## Product boundary
 
-Tibo is a local-first, Codex-first workflow assistant. It compiles compact task context and produces verification and handoff artifacts.
+Tibo is a local-first CLI that surfaces structural decisions made by coding agents and maintains a small, reviewable decision ledger.
+
+Tibo is not a hosted coding agent, a general project manager, a model-powered code reviewer, or an automatic quality certificate.
 
 ## Engineering rules
 
 - Keep repository analysis local by default.
-- Do not add a hosted service or model dependency to the first release.
-- Prefer deterministic analysis over model-generated guesses.
-- Every feature must define a measurable developer outcome.
-- Every generated artifact must reduce context, prevent a mistake, or improve handoff.
-- Never mark a task complete only because code was generated.
-- Preserve a clear distinction between estimates and measured values.
-- Keep the CLI usable without a Tibo account.
+- Make the first release usable without an account, API key, or model call.
+- Prefer deterministic structural detection over generated guesses.
+- Every finding must include evidence and a clear confidence or limitation.
+- Keep confirmed, rejected, and deferred decisions distinct.
+- Never infer user approval from a passing test or a successful command.
+- Do not claim that a dependency, schema, or module is wrong; report that it is new, changed, overlapping, or outside declared scope.
+- Keep the ledger small enough that a human and the next agent will actually read it.
 
 ## Required workflow
 
@@ -22,7 +24,8 @@ Tibo is a local-first, Codex-first workflow assistant. It compiles compact task 
 3. Make the smallest change that proves the behavior.
 4. Run the narrowest meaningful checks.
 5. Record what passed, what failed, and what remains uncertain.
+6. Update decision fixtures when detection behavior changes.
 
 ## Current scope
 
-The first release includes repository mapping, task packet generation, token estimation, diff checks, verification receipts, and handoff packets. Avoid expanding into hosted collaboration, autonomous orchestration, or broad project management until the local loop is proven.
+The first release covers TypeScript and JavaScript repositories, Git diffs, structural findings, interactive keep/reject/later decisions, and a durable ledger. Avoid hosted collaboration, model-dependent detection, broad learning features, and autonomous edits until this loop is reliable.

@@ -2,6 +2,7 @@
 
 ## Unreleased
 
-- Established the Tibo product thesis and Codex-first scope.
-- Defined local context packets, verification receipts, and handoff packets.
-- Added repository instructions and contribution standards.
+- Reframed Tibo as a local-first decision ledger for coding-agent changes.
+- Replaced the context-assistant README with the structural detection and ledger product promise.
+- Added architecture, principles, roadmap, and decision fixtures.
+- Removed unsupported promises around learning mode, token savings, and model-powered detection from the first release scope.

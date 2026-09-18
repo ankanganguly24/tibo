@@ -1,29 +1,28 @@
 # Contributing to Tibo
 
-Tibo is a small tool for making AI-assisted coding more focused and more accountable. A contribution should improve one of three outcomes:
-
-- Less irrelevant context
-- Better evidence that a change is correct
-- Easier continuation by the next session or engineer
+Tibo is a small local CLI that makes coding-agent decisions visible and
+reviewable. Contributions should improve detection, evidence, approval, or
+session-to-session continuity.
 
 ## Before opening a change
 
 Please describe:
 
 1. The developer problem.
-2. The current workaround.
+2. The structural signal or decision it exposes.
 3. The proposed behavior.
-4. The measurable outcome.
-5. The failure case the change must handle.
+4. The evidence a user will see.
+5. The false-positive or false-negative case the change must handle.
 
 ## Quality bar
 
 - Work locally by default.
-- Do not add a model or hosted-service dependency without a deterministic fallback.
-- Keep generated files concise and reviewable.
-- Add a fixture for behavior that affects context selection or verification.
+- Do not add a model or hosted-service dependency to the core loop.
+- Keep findings concise, stable, and linked to repository evidence.
+- Add a decision fixture for new detection behavior.
 - Report limitations and false positives.
-- Do not claim token savings without explaining how they were estimated.
+- Do not claim intent, correctness, or token savings that Tibo cannot measure.
+- Preserve explicit keep, reject, and later states.
 
 ## Pull requests
 
@@ -33,6 +32,6 @@ Every pull request should include:
 - Scope and non-goals
 - Example input and output
 - Tests or fixture changes
-- Context-size impact
+- False-positive and false-negative considerations
 - Security or privacy impact
 - Documentation updates

@@ -2,48 +2,49 @@
 
 ## User
 
-Solo engineers and vibe coders whose repositories have outgrown one-shot prompting.
+Solo engineers and small teams using coding agents who need to see and remember the architectural decisions those agents make.
+
+## Problem
+
+Coding agents can add dependencies, configuration, persistence fields, modules, and integration boundaries without making the choice visible. These changes may be locally reasonable and still create long-term drift.
 
 ## Core job
 
-Help a developer structure a problem, understand the relevant project, and make a safe change with only the context needed for that step.
+Read a Git diff, surface structural decisions with evidence, let a human keep, reject, or defer them, and preserve confirmed decisions for the next session.
 
-## Product modes
+## Product promise
 
-### Problem mode
+Tibo makes hidden change visible without adding a hosted service or requiring a model call.
 
-Turn an ambiguous request into a problem brief containing outcomes, facts, assumptions, constraints, options, risks, and the smallest useful next decision.
+## Primary workflow
 
-### Learn mode
+~~~text
+diff
+  -> structural detection
+  -> evidence-backed finding
+  -> keep / reject / later
+  -> decision ledger
+  -> next-session context
+~~~
 
-Explain a concept from the repository’s real code, link it to files and decisions, and end with a small check or experiment so the developer can verify understanding.
+## Success criteria
 
-### Build mode
-
-Turn an accepted problem into a compact task packet, support the coding-agent session, and produce verification and handoff receipts.
-
-## Primary outcome
-
-Reduce irrelevant context and repeated explanation while helping the developer move from uncertainty to a verified action.
-
-## Secondary outcomes
-
-- Detect drift between project guidance and code.
-- Make unresolved decisions visible.
-- Improve session-to-session handoff.
-- Create a reproducible record of verification.
-- Make project-specific learning faster and more grounded.
-
-## Product test
-
-For a representative problem-to-change flow, Tibo should reduce the estimated context sent to the agent while maintaining or improving task completion, verification, and developer understanding.
+- A developer can understand every finding without opening a second dashboard.
+- Every finding links to changed files or repository evidence.
+- A decision can be confirmed once and reused later.
+- Detection is deterministic for the same repository and diff.
+- The tool remains useful when no model, network, or account is available.
+- The ledger becomes more focused as decisions are resolved.
 
 ## Failure conditions
 
-- Tibo selects the wrong files and hides an important constraint.
-- Tibo reports token savings that do not reflect actual input.
-- Tibo treats passing tests as proof of product correctness.
-- Tibo creates more process overhead than it removes.
-- Tibo silently guesses a missing architectural decision.
-- Tibo answers a learning question with generic prose instead of project evidence.
-- Tibo expands vague problem statements into unnecessary project plans.
+- Tibo labels an implementation as wrong when it only has evidence that it is new.
+- Tibo hides a relevant dependency, schema, or scope change.
+- Tibo reports a heuristic as certainty.
+- The ledger becomes a second README nobody reads.
+- The tool creates more review work than it removes.
+- Tibo claims model-quality or security guarantees it cannot measure.
+
+## Deferred ideas
+
+Problem structuring, project-grounded learning, richer context packets, and model-assisted explanations may return after the decision ledger is useful. They are not part of the first product promise.
