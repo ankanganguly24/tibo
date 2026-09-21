@@ -110,6 +110,7 @@ the [roadmap](docs/roadmap.md).
 - [Architecture](docs/architecture.md)
 - [Principles](docs/principles.md)
 - [Roadmap](docs/roadmap.md)
+- [Timeline](docs/timeline.md)
 - [Decision fixtures](docs/decisions/)
 - [Contributing](CONTRIBUTING.md)
 
