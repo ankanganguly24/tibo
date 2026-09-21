@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Expanded the roadmap with concrete user outcomes, implementation slices,
+  evidence requirements, and phase exit criteria.
 - Added a living project timeline and recorded dependency evidence as the next
   implementation priority: package/version, changed lines, usage locations, and
   existing alternatives.
