@@ -9,6 +9,41 @@ did the agent decide here, and do I agree with it?”** Every phase below must
 make that answer more useful without turning Tibo into a generic linter or a
 hosted code analysis service.
 
+## How to use this roadmap
+
+The phases are deliberately sequential. Each one earns the next by proving a
+small user flow before adding more detectors or integrations.
+
+1. **Choose one decision type.** Start with the smallest change an agent can
+   make quietly, such as adding a dependency.
+2. **Extract evidence.** Show file paths, line numbers, diff context, and
+   repository matches. A detector is incomplete if it only emits a label.
+3. **Ask for a decision.** The user keeps, rejects, or defers the finding.
+   Tibo records the response without changing code.
+4. **Preserve the decision.** The ledger must explain the evidence later and
+   prevent accepted work from being raised again without a meaningful change.
+5. **Add a new surface only after the loop holds.** New detector categories,
+   Codex handoff, and CI reports all reuse the same finding and ledger contract.
+
+### What the checkboxes mean
+
+- **Shipped** means the behavior exists in the repository, has a test or
+  fixture where a regression is possible, and is documented for a user.
+- **In progress** means the behavior is the current implementation slice; it
+  may be incomplete and should not be presented as supported.
+- **Pending** means it has a defined reason to wait, a dependency on an
+  earlier phase, or a risk that has not been measured yet.
+- **Deferred** means it is intentionally outside the current product promise,
+  not forgotten work.
+
+### Evidence contract for every future detector
+
+Every finding must answer four things: **what changed, where it changed, why
+Tibo raised it, and what the user can decide now**. If Tibo cannot support one
+of those answers from local repository evidence, the output must say what is
+unknown. This rule applies equally to terminal output, JSON, the ledger, CI
+reports, and any future model-assisted explanation.
+
 ## Phase 1 — Make one decision reviewable
 
 **User:** a solo engineer has just let an agent change a TypeScript repository.
