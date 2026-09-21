@@ -117,7 +117,9 @@ the [roadmap](docs/roadmap.md).
 
 The landing page lives in [`website/`](website/). It is a separate Next.js
 App Router app inside this repository so the project can use Tibo to build and
-document Tibo. Deploy the `website/` directory as the Vercel project root.
+document Tibo. It is deployed at [tiborun.vercel.app](https://tiborun.vercel.app).
+Deploy the `website/` directory as the Vercel project root and set
+`NEXT_PUBLIC_SITE_URL=https://tiborun.vercel.app` in the production environment.
 
 ~~~bash
 cd website
