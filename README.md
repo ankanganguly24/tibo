@@ -113,6 +113,18 @@ the [roadmap](docs/roadmap.md).
 - [Decision fixtures](docs/decisions/)
 - [Contributing](CONTRIBUTING.md)
 
+## Website
+
+The landing page lives in [`website/`](website/). It is a separate Next.js
+App Router app inside this repository so the project can use Tibo to build and
+document Tibo. Deploy the `website/` directory as the Vercel project root.
+
+~~~bash
+cd website
+npm install
+npm run dev
+~~~
+
 ## Development direction
 
 The first implementation should prove one narrow loop:
