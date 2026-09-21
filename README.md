@@ -28,6 +28,18 @@ Nothing leaves your machine. No account, API key, or model call is required.
 npx tibo
 ~~~
 
+## Try the first slice
+
+~~~bash
+npm install
+npm run build
+node dist/index.js scan
+~~~
+
+Run it from a Git repository with a working-tree change. Tibo also includes
+untracked files in the local scan, so a newly created file is visible before
+it is staged. Use `node dist/index.js scan --json` for machine-readable output.
+
 ## Why
 
 The failure everyone notices is the agent writing bad code. You see it and fix it.
@@ -88,7 +100,9 @@ Tibo starts with TypeScript and JavaScript repositories. The first release is a 
 
 ## Status
 
-Pre-1.0 and honest about it. The product direction is defined; detection and ledger mechanics are being built in public. See the [roadmap](docs/roadmap.md).
+Pre-1.0 and honest about it. The first local scanner, deterministic findings,
+and durable ledger are now in place. Interactive review is the next slice. See
+the [roadmap](docs/roadmap.md).
 
 ## Documentation
 

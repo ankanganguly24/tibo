@@ -1,0 +1,12 @@
+{
+  "name": "tibo",
+  "version": "0.1.0",
+  "description": "A local-first decision ledger for coding agents.",
+  "type": "module",
+  "bin": { "tibo": "dist/index.js" },
+  "scripts": { "build": "tsc -p tsconfig.json", "dev": "tsx src/index.ts", "test": "npm run build && node --test dist/**/*.test.js" },
+  "keywords": ["codex", "ai-coding", "cli", "developer-tools", "local-first"],
+  "license": "MIT",
+  "engines": { "node": ">=20" },
+  "devDependencies": { "@types/node": "22.5.4", "tsx": "4.19.1", "typescript": "5.5.4" }
+}
