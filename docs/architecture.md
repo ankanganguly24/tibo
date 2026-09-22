@@ -12,11 +12,15 @@ Git repository
 
 ## Scanner
 
-Reads the working tree, Git diff, package manifests, configuration references, and repository instructions. It should avoid reading unrelated file contents until a detector needs them.
+Reads the working tree, Git diff, and package manifests. It includes untracked
+files while ignoring dependencies and Git internals.
 
 ## Detectors
 
-Detectors are narrow and explainable. Initial detectors cover dependencies, environment variables, schema or persistence changes, module overlap, public interfaces, and scope drift. Each detector returns evidence and limitations, not a natural-language verdict.
+Detectors are narrow and explainable. The current implementation covers added
+dependencies and environment-variable references. Schema, module, interface,
+and scope detectors are planned work. Each detector returns evidence and
+limitations, not a natural-language verdict.
 
 ## Findings
 
@@ -35,7 +39,9 @@ type Finding = {
 
 ## Ledger
 
-The ledger stores a finding's human state and reason. It is append-oriented and reviewable in Git. A later run can mark a finding resolved without deleting the history of the decision.
+The ledger stores a finding's human state and timestamp in
+`.tibo/decisions.json` and the reviewable `.tibo/decisions.md` file. A later
+run recognizes the stable finding ID and does not ask the same question again.
 
 ## Model boundary
 

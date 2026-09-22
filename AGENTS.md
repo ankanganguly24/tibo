@@ -24,7 +24,7 @@ Tibo is not a hosted coding agent, a general project manager, a model-powered co
 3. Make the smallest change that proves the behavior.
 4. Run the narrowest meaningful checks.
 5. Record what passed, what failed, and what remains uncertain.
-6. Update decision fixtures when detection behavior changes.
+6. Update focused tests or fixtures when detection behavior changes.
 
 ## Current scope
 

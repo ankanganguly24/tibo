@@ -19,7 +19,8 @@ Please describe:
 - Work locally by default.
 - Do not add a model or hosted-service dependency to the core loop.
 - Keep findings concise, stable, and linked to repository evidence.
-- Add a decision fixture for new detection behavior.
+- Add a focused test or fixture for new detection behavior when the behavior
+  can regress.
 - Report limitations and false positives.
 - Do not claim intent, correctness, or token savings that Tibo cannot measure.
 - Preserve explicit keep, reject, and later states.

@@ -106,12 +106,9 @@ the [roadmap](docs/roadmap.md).
 
 ## Documentation
 
-- [Product brief](docs/product-brief.md)
 - [Architecture](docs/architecture.md)
-- [Principles](docs/principles.md)
 - [Roadmap](docs/roadmap.md)
 - [Timeline](docs/timeline.md)
-- [Decision fixtures](docs/decisions/)
 - [Contributing](CONTRIBUTING.md)
 
 ## Website
