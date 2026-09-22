@@ -12,7 +12,8 @@ entry at the top.
 - TypeScript CLI scaffolded with `scan` and `scan --json` commands.
 - Working-tree and untracked-file diffs are collected locally.
 - Dependency additions and environment-variable references are detected.
-- Dependency findings include manifest and added usage evidence with line numbers.
+- Dependency findings include manifest, added usage, and possible repository
+  matches with line numbers where available.
 - Findings have stable IDs and support keep, reject, later, and why decisions.
 - `tibo decide` records decisions for non-interactive agent skills.
 - A portable `tibo-review` skill is included for Codex and Claude Code.
@@ -24,16 +25,14 @@ entry at the top.
 
 ### In progress
 
-**Existing alternatives and agent workflow validation.** The first skill can now
-run the CLI and record decisions. The next evidence slice searches for related
-packages or internal utilities without claiming equivalence.
+**Agent workflow validation.** The first skill can run the CLI and record
+explicit decisions. Repository matches are now reported as bounded lexical
+evidence, never as proof of equivalence.
 
 ### Next
 
-1. Search the repository manifest and source tree for possible overlapping
-   packages or utilities, with evidence links rather than guesses.
-2. Preserve line-level evidence in `.tibo/decisions.md`.
-3. Install and dogfood the Codex skill on Tibo's own changes.
+1. Preserve line-level evidence in `.tibo/decisions.md`.
+2. Install and dogfood the Codex skill on Tibo's own changes.
 4. Validate the same portable skill instructions in Claude Code.
 5. Only then move to schema safety, module overlap, and Git scope checks.
 

@@ -1,5 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { detect } from "./detect.js";
 
 test("detects a dependency added by a package manifest diff", () => {
@@ -114,4 +117,27 @@ test("tracks lines in an untracked-file style diff without a hunk header", () =>
   const findings = detect(diff).filter((item) => item.kind === "env");
   assert.equal(findings[0]?.evidence[0]?.line, 1);
   assert.equal(findings[1]?.evidence[0]?.line, 2);
+});
+
+
+test("reports possible existing package and utility matches as evidence", () => {
+  const root = mkdtempSync(join(tmpdir(), "tibo-related-"));
+  mkdirSync(join(root, "src"));
+  writeFileSync(join(root, "package.json"), JSON.stringify({ dependencies: { "@sendgrid/mail": "^8.0.0" } }));
+  writeFileSync(join(root, "src", "mailer.ts"), "export function sendMail() { return true; }\n");
+  const diff = [
+    "--- a/package.json",
+    "+++ b/package.json",
+    "@@ -1 +1 @@",
+    "-{\"dependencies\":{\"@sendgrid/mail\":\"^8.0.0\"}}",
+    "+{\"dependencies\":{\"@sendgrid/mail\":\"^8.0.0\",\"@acme/mail-client\":\"^1.0.0\"}}",
+  ].join("\n");
+  try {
+    const finding = detect(diff, root).find((item) => item.kind === "dependency");
+    assert.ok(finding);
+    assert.ok(finding.evidence.some((item) => item.detail.includes("@sendgrid/mail")));
+    assert.match(finding.limitation, /lexical evidence/);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
 });

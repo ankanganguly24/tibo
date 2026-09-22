@@ -52,7 +52,7 @@ Tibo addresses the decision layer. It reads a Git diff, detects structural signa
 
 ## What Tibo detects today
 
-- Newly added dependencies, versions, and added import locations
+- Newly added dependencies, versions, added import locations, and possible repository matches
 - New environment variables and configuration reads
 - Basic schema and migration changes
 - Decisions you explicitly confirm, reject, or defer

@@ -24,7 +24,7 @@ if (command === "decide") {
     console.error("Usage: tibo decide <finding-id> <keep|reject|later>");
     process.exit(1);
   }
-  const finding = detect(workingDiff(cwd)).find((item) => item.id === findingId);
+  const finding = detect(workingDiff(cwd), cwd).find((item) => item.id === findingId);
   if (!finding) {
     console.error(`Finding ${findingId} is not present in the current working diff.`);
     process.exit(1);
@@ -34,7 +34,7 @@ if (command === "decide") {
   process.exit(0);
 }
 
-const findings = applyLedger(detect(workingDiff(cwd)), loadLedger(cwd)).filter((finding) => finding.decision === "unreviewed");
+const findings = applyLedger(detect(workingDiff(cwd), cwd), loadLedger(cwd)).filter((finding) => finding.decision === "unreviewed");
 if (args.has("scan") || args.size === 0) {
   if (args.has("--json")) { console.log(JSON.stringify(findings, null, 2)); process.exit(0); }
   console.log(renderFindings(findings));

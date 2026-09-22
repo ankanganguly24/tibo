@@ -68,9 +68,9 @@ remembered in `.tibo/`.
 - [x] Show package name, requested version, and the exact manifest diff lines.
 - [x] Find every import or usage location introduced by the change, including
   file path and line number where available.
-- [ ] Search the repository for an existing dependency or internal utility that
-  appears to solve the same job.
-- [ ] Explain why the finding was raised using only the evidence Tibo found;
+- [x] Search the repository for possible existing dependencies or internal
+  utilities using bounded lexical evidence; never claim equivalence.
+- [x] Explain why the finding was raised using only the evidence Tibo found;
   never claim that two packages are equivalent without showing the match.
 - [x] Include the evidence in terminal output and `scan --json`.
 - [ ] Preserve line-level evidence in the rendered ledger entry so a later

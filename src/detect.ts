@@ -1,10 +1,56 @@
 import { createHash } from "node:crypto";
+import { readFileSync, readdirSync, statSync } from "node:fs";
+import { join, relative } from "node:path";
 import type { Evidence, Finding } from "./types.js";
 
 type AddedLine = { path: string; line: number; text: string };
 
 const currentFile = (line: string) => line.match(/^\+\+\+ b\/(.+)$/)?.[1];
 const stableId = (kind: string, value: string) => createHash("sha1").update(`${kind}:${value}`).digest("hex").slice(0, 12);
+
+const ignoredDirectories = new Set([".git", "node_modules", "dist", ".next", "coverage"]);
+const capabilityStopWords = new Set(["js", "ts", "node", "core", "lib", "sdk", "api", "client", "plugin"]);
+
+function capabilityTokens(name: string): string[] {
+  return [...new Set(name.toLowerCase().split(/[^a-z0-9]+/).filter((token) => token.length >= 3 && !capabilityStopWords.has(token)))];
+}
+
+function repositoryFiles(root: string): string[] {
+  const files: string[] = [];
+  const visit = (directory: string) => {
+    if (files.length >= 2000) return;
+    for (const entry of readdirSync(directory, { withFileTypes: true })) {
+      if (ignoredDirectories.has(entry.name)) continue;
+      const path = join(directory, entry.name);
+      if (entry.isDirectory()) visit(path);
+      else if (entry.isFile() && /\.(?:js|jsx|ts|tsx|json|mjs|cjs)$/.test(entry.name)) files.push(path);
+    }
+  };
+  try { visit(root); } catch { return []; }
+  return files;
+}
+
+function relatedEvidence(name: string, cwd: string, changedPaths: Set<string>, existingDependencies: Record<string, string>): Evidence[] {
+  const tokens = capabilityTokens(name);
+  if (!tokens.length) return [];
+  const evidence: Evidence[] = [];
+  for (const [dependency, version] of Object.entries(existingDependencies)) {
+    if (dependency === name) continue;
+    const overlap = capabilityTokens(dependency).filter((token) => tokens.includes(token));
+    if (overlap.length) evidence.push({ path: "package.json", detail: `Existing dependency ${dependency} ${version} shares capability token: ${overlap.join(", ")}` });
+  }
+  for (const absolute of repositoryFiles(cwd)) {
+    const path = relative(cwd, absolute) || absolute;
+    if (changedPaths.has(path) || path === "package.json") continue;
+    let content = "";
+    try { content = readFileSync(absolute, "utf8").slice(0, 200_000).toLowerCase(); } catch { continue; }
+    const pathText = path.toLowerCase();
+    const overlap = tokens.filter((token) => pathText.includes(token) || content.includes(token));
+    if (overlap.length) evidence.push({ path, detail: `Possible related repository code; matched token: ${overlap[0]}` });
+    if (evidence.length >= 8) break;
+  }
+  return evidence;
+}
 
 function manifestDependencies(fragment: string): Record<string, string> {
   try {
@@ -74,7 +120,7 @@ function packageUsage(name: string, lines: AddedLine[]): AddedLine[] {
   return lines.filter((line) => line.path !== "package.json" && pattern.test(line.text));
 }
 
-export function detect(diff: string): Finding[] {
+export function detect(diff: string, cwd?: string): Finding[] {
   const findings: Finding[] = [];
   const lines = addedLines(diff);
   let oldPackageText = "";
@@ -103,6 +149,7 @@ export function detect(diff: string): Finding[] {
   }
   const oldDeps = manifestDependencies(oldPackageText);
   const newDeps = manifestDependencies(newPackageText);
+  const changedPaths = new Set(lines.map((line) => line.path));
   // Context lines in a unified diff carry a leading space, so a reformatted
   // manifest is not always valid JSON on either side. Recover additions only
   // while inside a dependency block; never treat scripts or engines as deps.
@@ -129,9 +176,13 @@ export function detect(diff: string): Finding[] {
     const usage = packageUsage(name, lines);
     const evidence: Evidence[] = [{ path: "package.json", ...(manifestLine ? { line: manifestLine.line } : {}), detail: `Added manifest entry: ${name} ${version}` }];
     for (const used of usage.slice(0, 5)) evidence.push({ path: used.path, line: used.line, detail: `Imports or loads ${name}` });
-    const limitation = usage.length
-      ? "Presence in a manifest does not show whether the dependency is necessary or safe."
-      : "No import or require for this package appears in the added lines; the diff may be incomplete or usage may be indirect.";
+    const related = cwd ? relatedEvidence(name, cwd, changedPaths, oldDeps) : [];
+    evidence.push(...related);
+    const limitation = related.length
+      ? "Repository matches are lexical evidence only; they do not prove that an existing dependency or utility is equivalent."
+      : usage.length
+        ? "Presence in a manifest does not show whether the dependency is necessary or safe."
+        : "No import or require for this package appears in the added lines; the diff may be incomplete or usage may be indirect.";
     findings.push({ id: stableId("dependency", name), kind: "dependency", summary: `dependency added  ${name} ${version}`, evidence, confidence: "high", limitation });
   }
   return dedupe(findings);
