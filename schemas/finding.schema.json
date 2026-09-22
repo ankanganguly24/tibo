@@ -6,7 +6,7 @@
   "required": ["id", "kind", "summary", "evidence", "confidence", "limitation", "decision"],
   "properties": {
     "id": { "type": "string", "pattern": "^[a-f0-9]{12}$" },
-    "kind": { "type": "string", "enum": ["dependency", "env", "schema", "interface"] },
+    "kind": { "type": "string", "enum": ["dependency", "env", "schema", "interface", "module"] },
     "summary": { "type": "string" },
     "evidence": {
       "type": "array",

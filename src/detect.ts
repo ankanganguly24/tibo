@@ -23,11 +23,50 @@ function repositoryFiles(root: string): string[] {
       if (ignoredDirectories.has(entry.name)) continue;
       const path = join(directory, entry.name);
       if (entry.isDirectory()) visit(path);
-      else if (entry.isFile() && /\.(?:js|jsx|ts|tsx|json|mjs|cjs)$/.test(entry.name)) files.push(path);
+      else if (entry.isFile() && /\.(?:js|jsx|ts|tsx|json|mjs|cjs|sql|prisma)$/.test(entry.name)) files.push(path);
     }
   };
   try { visit(root); } catch { return []; }
   return files;
+}
+
+function newFilePaths(diff: string): Set<string> {
+  const paths = new Set<string>();
+  let oldMissing = false;
+  for (const line of diff.split("\n")) {
+    if (line.startsWith("--- /dev/null")) oldMissing = true;
+    else if (line.startsWith("--- a/")) oldMissing = false;
+    const path = currentFile(line);
+    if (path && oldMissing) paths.add(path);
+  }
+  return paths;
+}
+
+function moduleTokens(path: string): string[] {
+  const base = path.split("/").pop()?.replace(/\.(?:jsx?|tsx?|mjs|cjs)$/, "") ?? "";
+  return capabilityTokens(base).filter((token) => !["index", "test", "spec", "page", "route"].includes(token));
+}
+
+function moduleOverlapEvidence(path: string, cwd: string, changedPaths: Set<string>): Evidence[] {
+  const tokens = moduleTokens(path);
+  if (!tokens.length) return [];
+  const evidence: Evidence[] = [];
+  for (const absolute of repositoryFiles(cwd)) {
+    const candidate = relative(cwd, absolute) || absolute;
+    if (changedPaths.has(candidate) || candidate === path) continue;
+    const overlap = moduleTokens(candidate).filter((token) => tokens.includes(token));
+    if (overlap.length) evidence.push({ path: candidate, detail: `Possible overlapping module; matched token: ${overlap[0]}` });
+    if (evidence.length >= 5) break;
+  }
+  return evidence;
+}
+
+function rollbackEvidence(path: string, cwd: string): Evidence[] {
+  const absolute = join(cwd, path);
+  const directory = absolute.slice(0, absolute.lastIndexOf("/"));
+  try {
+    return readdirSync(directory).filter((name) => /(?:down|rollback|revert)/i.test(name)).slice(0, 3).map((name) => ({ path: relative(cwd, join(directory, name)), detail: "Possible rollback or reverse migration file" }));
+  } catch { return []; }
 }
 
 function relatedEvidence(name: string, cwd: string, changedPaths: Set<string>, existingDependencies: Record<string, string>): Evidence[] {
@@ -153,7 +192,7 @@ export function detect(diff: string, cwd?: string): Finding[] {
         id: stableId("schema", `${added.path}:${added.line}:${added.text.trim()}`),
         kind: "schema",
         summary: destructiveSchema ? "destructive schema or persistence change" : "schema or persistence change",
-        evidence: [{ path: added.path, line: added.line, detail: added.text.trim() }],
+        evidence: [{ path: added.path, line: added.line, detail: added.text.trim() }, ...(cwd ? rollbackEvidence(added.path, cwd) : [])],
         confidence: "high",
         severity: destructiveSchema ? "high" : "medium",
         limitation: destructiveSchema
@@ -178,6 +217,7 @@ export function detect(diff: string, cwd?: string): Finding[] {
   const oldDeps = manifestDependencies(oldPackageText);
   const newDeps = manifestDependencies(newPackageText);
   const changedPaths = new Set(lines.map((line) => line.path));
+  const addedFiles = newFilePaths(diff);
   // Context lines in a unified diff carry a leading space, so a reformatted
   // manifest is not always valid JSON on either side. Recover additions only
   // while inside a dependency block; never treat scripts or engines as deps.
@@ -195,6 +235,19 @@ export function detect(diff: string, cwd?: string): Finding[] {
     if (dependencySection) {
       const entry = line.text.match(/^\s*"([^"]+)"\s*:\s*"([^"]+)"\s*,?\s*$/);
       if (line.added && entry && !newDeps[entry[1]]) newDeps[entry[1]] = entry[2];
+    }
+  }
+  if (cwd) {
+    for (const path of addedFiles) {
+      const overlap = moduleOverlapEvidence(path, cwd, changedPaths);
+      if (overlap.length) findings.push({
+        id: stableId("module", path),
+        kind: "module",
+        summary: `possible overlapping module   ${path}`,
+        evidence: [{ path, detail: "New file in the working diff" }, ...overlap],
+        confidence: "low",
+        limitation: "Filename overlap is a review prompt, not proof that the modules have the same responsibility."
+      });
     }
   }
   for (const [name, version] of Object.entries(newDeps)) {

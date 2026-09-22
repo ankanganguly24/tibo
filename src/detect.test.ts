@@ -185,3 +185,45 @@ test("detects newly exported TypeScript symbols", () => {
   ]);
   assert.equal(findings[0]?.severity, "medium");
 });
+
+test("reports possible module overlap for a newly added file", () => {
+  const root = mkdtempSync(join(tmpdir(), "tibo-module-"));
+  mkdirSync(join(root, "src"));
+  writeFileSync(join(root, "src", "order-service.ts"), "export function createOrder() {}\n");
+  const diff = [
+    "diff --git a/src/order-service-v2.ts b/src/order-service-v2.ts",
+    "new file mode 100644",
+    "--- /dev/null",
+    "+++ b/src/order-service-v2.ts",
+    "@@ -0,0 +1,1 @@",
+    "+export function createOrderV2() {}",
+  ].join("\n");
+  try {
+    const finding = detect(diff, root).find((item) => item.kind === "module");
+    assert.ok(finding);
+    assert.match(finding.summary, /order-service-v2/);
+    assert.ok(finding.evidence.some((item) => item.path === "src/order-service.ts"));
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("includes a nearby rollback file as schema evidence", () => {
+  const root = mkdtempSync(join(tmpdir(), "tibo-schema-"));
+  mkdirSync(join(root, "db", "migrations"), { recursive: true });
+  writeFileSync(join(root, "db", "migrations", "003_down.sql"), "-- rollback\n");
+  const diff = [
+    "diff --git a/db/migrations/003_up.sql b/db/migrations/003_up.sql",
+    "--- /dev/null",
+    "+++ b/db/migrations/003_up.sql",
+    "@@ -0,0 +1,1 @@",
+    "+ALTER TABLE orders DROP COLUMN legacy_status;",
+  ].join("\n");
+  try {
+    const finding = detect(diff, root).find((item) => item.kind === "schema");
+    assert.ok(finding);
+    assert.ok(finding.evidence.some((item) => item.path === "db/migrations/003_down.sql"));
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});

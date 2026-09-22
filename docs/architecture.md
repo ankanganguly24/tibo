@@ -45,6 +45,8 @@ Current detectors are narrow and explainable:
 - **Schema:** SQL and migration-path changes, with a high-severity marker for
   potentially destructive operations.
 - **Interface:** newly exported TypeScript and JavaScript symbols.
+- **Module:** low-confidence filename overlap for newly added files, with
+  existing-file evidence.
 
 Public interfaces, module overlap, richer schema safety, and requested-scope
 analysis are planned. Each detector returns evidence, confidence, and a
@@ -57,7 +59,7 @@ Findings have stable IDs so the same decision can be recognized across runs:
 ~~~ts
 type Finding = {
   id: string;
-  kind: 'dependency' | 'env' | 'schema' | 'interface';
+  kind: 'dependency' | 'env' | 'schema' | 'interface' | 'module';
   summary: string;
   evidence: Array<{ path: string; line?: number; detail: string }>;
   confidence: 'high' | 'medium' | 'low';

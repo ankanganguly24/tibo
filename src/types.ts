@@ -1,4 +1,4 @@
-export type FindingKind = "dependency" | "env" | "schema" | "interface";
+export type FindingKind = "dependency" | "env" | "schema" | "interface" | "module";
 export type Confidence = "high" | "medium" | "low";
 export type Decision = "unreviewed" | "keep" | "reject" | "later";
 

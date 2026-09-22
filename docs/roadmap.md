@@ -106,10 +106,10 @@ can verify.
 - [x] Detect newly exported functions, types, classes, constants, and interfaces.
 - [ ] Detect changed exported symbols, routes, CLI commands, event names, and
   serialized fields.
-- [ ] Detect a new module whose role overlaps an existing module using imports,
-  filenames, exports, and referenced symbols as evidence.
-- [ ] Report the existing owner and the new owner side by side so the user can
-  decide whether the split is intentional.
+- [x] Detect possible overlap for a new module using bounded filename evidence.
+- [ ] Strengthen module overlap with imports, exports, and referenced symbols.
+- [x] Report possible existing files beside a newly added module so the user
+  can decide whether the split is intentional.
 
 ### Change scope and confidence
 

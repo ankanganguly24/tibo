@@ -15,6 +15,8 @@
 - Classified potentially destructive schema and migration statements with high
   severity and explicit safety limitations.
 - Added findings for newly exported TypeScript and JavaScript symbols.
+- Added low-confidence possible-overlap findings for newly added modules and
+  nearby rollback-file evidence for schema changes.
 - Expanded the roadmap with concrete user outcomes, implementation slices,
   evidence requirements, and phase exit criteria.
 - Added a living project timeline and recorded dependency evidence as the next
