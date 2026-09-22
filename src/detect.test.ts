@@ -21,3 +21,20 @@ test("detects an environment variable reference", () => {
   assert.equal(findings[0]?.kind, "env");
   assert.match(findings[0]?.summary ?? "", /SMTP_FROM/);
 });
+
+test("detects a dependency from npm's reformatted manifest diff", () => {
+  const diff = [
+    "diff --git a/package.json b/package.json",
+    "--- a/package.json",
+    "+++ b/package.json",
+    "-  \"dependencies\": {",
+    "-    \"typescript\": \"^5.0.0\"",
+    "+  \"dependencies\": {",
+    "+    \"typescript\": \"^5.0.0\",",
+    "+    \"@supabase/supabase-js\": \"^2.0.0\"",
+    "+  },",
+  ].join("\n");
+  const findings = detect(diff);
+  assert.equal(findings.length, 1);
+  assert.equal(findings[0]?.summary, "dependency added  @supabase/supabase-js ^2.0.0");
+});

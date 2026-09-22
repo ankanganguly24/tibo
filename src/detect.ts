@@ -5,6 +5,38 @@ const addedLines = (diff: string) => diff.split("\n").filter((line) => line.star
 const currentFile = (line: string) => line.match(/^\+\+\+ b\/(.+)$/)?.[1];
 const stableId = (kind: string, value: string) => createHash("sha1").update(`${kind}:${value}`).digest("hex").slice(0, 12);
 
+function manifestDependencies(fragment: string): Record<string, string> {
+  try {
+    const parsed = JSON.parse(fragment) as { dependencies?: Record<string, string>; devDependencies?: Record<string, string> };
+    return { ...(parsed.dependencies ?? {}), ...(parsed.devDependencies ?? {}) };
+  } catch {
+    // A normal npm edit often reformats package.json. The diff sides are then
+    // JSON fragments rather than complete documents, so extract dependency
+    // entries from the two manifest sections instead of parsing the fragment.
+    const dependencies: Record<string, string> = {};
+    for (const match of fragment.matchAll(/\"(?:dependencies|devDependencies)\"\s*:\s*\{([^}]*)\}/g)) {
+      for (const entry of match[1].matchAll(/\"([^\"]+)\"\s*:\s*\"([^\"]+)\"/g)) dependencies[entry[1]] = entry[2];
+    }
+    let section: "dependencies" | "devDependencies" | undefined;
+    for (const line of fragment.split("\n")) {
+      const header = line.match(/^\s{2}\"(dependencies|devDependencies)\"\s*:\s*\{/);
+      if (header) {
+        section = header[1] as "dependencies" | "devDependencies";
+        continue;
+      }
+      if (section && /^\s{2}\},?\s*$/.test(line)) {
+        section = undefined;
+        continue;
+      }
+      if (section) {
+        const entry = line.match(/^\s{4}\"([^\"]+)\"\s*:\s*\"([^\"]+)\"\s*,?\s*$/);
+        if (entry) dependencies[entry[1]] = entry[2];
+      }
+    }
+    return dependencies;
+  }
+}
+
 export function detect(diff: string): Finding[] {
   const findings: Finding[] = [];
   let oldPackageText = "";
@@ -26,12 +58,8 @@ export function detect(diff: string): Finding[] {
     }
     if (line.startsWith("-") && !line.startsWith("---") && file === "package.json") oldPackageText += `${line.slice(1)}\n`;
   }
-  let oldPackage: Record<string, unknown> | undefined;
-  let newPackage: Record<string, unknown> | undefined;
-  try { oldPackage = JSON.parse(oldPackageText); } catch {}
-  try { newPackage = JSON.parse(newPackageText); } catch {}
-  const oldDeps = { ...(oldPackage?.dependencies as Record<string, string> | undefined), ...(oldPackage?.devDependencies as Record<string, string> | undefined) };
-  const newDeps = { ...(newPackage?.dependencies as Record<string, string> | undefined), ...(newPackage?.devDependencies as Record<string, string> | undefined) };
+  const oldDeps = manifestDependencies(oldPackageText);
+  const newDeps = manifestDependencies(newPackageText);
   for (const [name, version] of Object.entries(newDeps)) if (!(name in oldDeps)) findings.push({ id: stableId("dependency", name), kind: "dependency", summary: `dependency added  ${name} ${version}`, evidence: [{ path: "package.json", detail: `Added manifest entry: ${name}` }], confidence: "high", limitation: "Presence in a manifest does not show whether the dependency is necessary or safe." });
   return dedupe(findings);
 }
