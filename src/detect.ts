@@ -39,24 +39,31 @@ function addedLines(diff: string): AddedLine[] {
   const lines: AddedLine[] = [];
   let file = "unknown";
   let newLine = 0;
+  let inferredLine = 1;
   for (const raw of diff.split("\n")) {
     const path = currentFile(raw);
     if (path) {
       file = path;
       newLine = 0;
+      inferredLine = 1;
       continue;
     }
     const hunk = raw.match(/^@@ -\d+(?:,\d+)? \+(\d+)(?:,\d+)? @@/);
     if (hunk) {
       newLine = Number(hunk[1]);
+      inferredLine = newLine;
       continue;
     }
     if (raw.startsWith("+") && !raw.startsWith("+++")) {
-      lines.push({ path: file, line: newLine || 1, text: raw.slice(1) });
+      lines.push({ path: file, line: newLine || inferredLine, text: raw.slice(1) });
       if (newLine) newLine += 1;
+      else inferredLine += 1;
       continue;
     }
-    if (!raw.startsWith("-") && !raw.startsWith("\\") && newLine) newLine += 1;
+    if (!raw.startsWith("-") && !raw.startsWith("\\")) {
+      if (newLine) newLine += 1;
+      else if (raw.startsWith(" ")) inferredLine += 1;
+    }
   }
   return lines;
 }

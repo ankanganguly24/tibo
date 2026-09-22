@@ -102,3 +102,16 @@ test("does not mistake scripts or engines for dependencies in a reformatted mani
   assert.equal(findings.length, 1);
   assert.equal(findings[0]?.summary, "dependency added  stripe ^16.0.0");
 });
+
+
+test("tracks lines in an untracked-file style diff without a hunk header", () => {
+  const diff = [
+    "diff --git a/src/config.ts b/src/config.ts",
+    "+++ b/src/config.ts",
+    "+export const first = process.env.FIRST_KEY;",
+    "+export const second = process.env.SECOND_KEY;",
+  ].join("\n");
+  const findings = detect(diff).filter((item) => item.kind === "env");
+  assert.equal(findings[0]?.evidence[0]?.line, 1);
+  assert.equal(findings[1]?.evidence[0]?.line, 2);
+});
