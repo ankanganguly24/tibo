@@ -12,8 +12,8 @@ const terminal = `$ tibo
   2. new environment var   SMTP_FROM
      src/email/config.ts · read at startup, no default
 
-  3. parallel module       src/utils/mail.ts
-     duplicates the role of src/email/send.ts
+  3. possible module overlap  src/utils/mail.ts
+     matched an existing mail utility
 
   [k] keep   [r] reject   [l] later   [w] why`;
 
@@ -24,16 +24,22 @@ function CopyCommand() {
 }
 
 const steps = [
-  ["01", "It reads the diff", "Structural detection, locally. New dependencies, schema changes, env vars, new exports, duplicate modules. No model, no embeddings, nothing uploaded."],
-  ["02", "You clear the inbox", "Keep, reject, or defer. Three keys. A decision confirmed once is never raised again."],
-  ["03", "The ledger remembers", <>Confirmed decisions land in <code>.tibo/decisions.md</code>, with the evidence. The next session reads that instead of asking you to explain the project again.</>],
+  ["01", "It reads the diff", "Structural detection, locally. Dependencies, env vars, schema changes, exports, and possible module overlap. No model, no embeddings, nothing uploaded."],
+  ["02", "You clear the inbox", "Keep, reject, or defer. Tibo shows the evidence and leaves the decision with you."],
+  ["03", "The ledger remembers", <>Decisions land in <code>.tibo/decisions.md</code>. A fresh session can run <code>tibo summary</code> instead of asking you to explain the project again.</>],
+] as const;
+
+const guides = [
+  { id: "guide-first-scan", number: "Guide 01", title: "Run your first review", description: "Install Tibo, let an agent make a change, then inspect the working diff.", command: "npm install\nnpm run build\nnode dist/index.js scan" },
+  { id: "guide-decide", number: "Guide 02", title: "Read and decide", description: "Follow the evidence, then keep, reject, or defer one finding.", command: "node dist/index.js scan --json\nnode dist/index.js decide <finding-id> keep" },
+  { id: "guide-repair", number: "Guide 03", title: "Repair with approval", description: "Reject a change, approve a narrow Codex repair, test it, and scan again.", command: "node dist/index.js decide <id> reject\n# approve the repair\ntibo summary" },
 ] as const;
 
 export default function Home() {
   return <main>
     <header className="mx-auto flex w-full max-w-5xl items-center justify-between px-6 py-7 lg:px-8">
       <a href="#top" className="flex items-center gap-2 font-mono text-sm font-semibold tracking-[-0.02em]"><img src="/logo.svg" alt="" className="h-5 w-5" />tibo<span className="text-amber">.</span></a>
-      <nav className="flex items-center gap-6 text-sm text-[#aaa69d]"><a href="#how" className="transition-colors hover:text-paper">How it works</a><a href="https://github.com/ankanganguly24/tibo" target="_blank" rel="noreferrer" className="transition-colors hover:text-paper">GitHub ↗</a></nav>
+      <nav className="flex items-center gap-6 text-sm text-[#aaa69d]"><a href="#learn" className="transition-colors hover:text-paper">Learn</a><a href="#how" className="transition-colors hover:text-paper">How it works</a><a href="https://github.com/ankanganguly24/tibo" target="_blank" rel="noreferrer" className="transition-colors hover:text-paper">GitHub ↗</a></nav>
     </header>
 
     <section id="top" className="mx-auto max-w-5xl px-6 pb-20 pt-20 lg:px-8 lg:pb-28 lg:pt-32">
@@ -49,7 +55,7 @@ export default function Home() {
 
     <section className="border-t border-line"><div className="mx-auto max-w-5xl px-6 py-24 lg:px-8 lg:py-28"><div className="max-w-2xl"><p className="mb-8 font-mono text-xs uppercase tracking-[0.18em] text-[#66635c]">What it doesn&apos;t do</p><ul className="space-y-4 text-xl tracking-[-0.02em] text-[#aaa69d]"><li>Doesn&apos;t read your code with a model.</li><li>Doesn&apos;t need tests.</li><li>Doesn&apos;t need you to adopt a workflow.</li><li>Doesn&apos;t tell you a change is good.</li><li>Never says &quot;done.&quot;</li></ul></div></div></section>
 
-    <section id="learn" className="border-t border-line"><div className="mx-auto max-w-5xl px-6 py-24 lg:px-8 lg:py-28"><div className="max-w-2xl"><p className="mb-4 font-mono text-xs uppercase tracking-[0.18em] text-[#66635c]">Learn</p><h2 className="text-3xl font-medium tracking-[-0.04em] sm:text-4xl">Small guides for working with coding agents.</h2><p className="mt-5 text-lg leading-8 text-[#aaa69d]">Practical notes for keeping an agent inside the work you actually meant to do.</p></div><div className="mt-12 grid gap-px overflow-hidden border border-line bg-line md:grid-cols-3"><a href="https://github.com/ankanganguly24/tibo#readme" target="_blank" rel="noreferrer" className="group bg-ink p-6 transition-colors hover:bg-[#11110f] sm:p-8"><p className="font-mono text-xs text-[#77736b]">Guide 01</p><h3 className="mt-10 text-xl font-medium tracking-[-0.03em] group-hover:text-amber">Coming soon</h3><p className="mt-3 text-sm leading-6 text-[#aaa69d]">A guide to be published here.</p></a><a href="https://github.com/ankanganguly24/tibo#readme" target="_blank" rel="noreferrer" className="group bg-ink p-6 transition-colors hover:bg-[#11110f] sm:p-8"><p className="font-mono text-xs text-[#77736b]">Guide 02</p><h3 className="mt-10 text-xl font-medium tracking-[-0.03em] group-hover:text-amber">Coming soon</h3><p className="mt-3 text-sm leading-6 text-[#aaa69d]">A guide to be published here.</p></a><a href="https://github.com/ankanganguly24/tibo#readme" target="_blank" rel="noreferrer" className="group bg-ink p-6 transition-colors hover:bg-[#11110f] sm:p-8"><p className="font-mono text-xs text-[#77736b]">Guide 03</p><h3 className="mt-10 text-xl font-medium tracking-[-0.03em] group-hover:text-amber">Coming soon</h3><p className="mt-3 text-sm leading-6 text-[#aaa69d]">A guide to be published here.</p></a></div></div></section>
+    <section id="learn" className="border-t border-line"><div className="mx-auto max-w-5xl px-6 py-24 lg:px-8 lg:py-28"><div className="max-w-2xl"><p className="mb-4 font-mono text-xs uppercase tracking-[0.18em] text-[#66635c]">Learn</p><h2 className="text-3xl font-medium tracking-[-0.04em] sm:text-4xl">Use Tibo after the agent stops typing.</h2><p className="mt-5 text-lg leading-8 text-[#aaa69d]">Three small steps turn a finished agent task into a reviewable decision.</p></div><div className="mt-12 grid gap-px overflow-hidden border border-line bg-line md:grid-cols-3">{guides.map((guide) => <a key={guide.id} href={`#${guide.id}`} className="group bg-ink p-6 transition-colors hover:bg-[#11110f] sm:p-8"><p className="font-mono text-xs text-[#77736b]">{guide.number}</p><h3 className="mt-10 text-xl font-medium tracking-[-0.03em] group-hover:text-amber">{guide.title}</h3><p className="mt-3 text-sm leading-6 text-[#aaa69d]">{guide.description}</p><span className="mt-7 inline-block font-mono text-xs text-amber">Read guide →</span></a>)}</div><div className="mt-16 space-y-5">{guides.map((guide) => <article key={guide.id} id={guide.id} className="scroll-mt-8 border-t border-[#4b4944] pt-6 md:grid md:grid-cols-[1fr_1.4fr] md:gap-12"><div><p className="font-mono text-xs text-amber">{guide.number}</p><h3 className="mt-3 text-2xl font-medium tracking-[-0.04em]">{guide.title}</h3><p className="mt-4 max-w-md text-base leading-7 text-[#aaa69d]">{guide.description}</p></div><pre className="mt-6 overflow-x-auto rounded-md border border-line bg-[#10100f] p-5 font-mono text-sm leading-7 text-[#d4d0c7] md:mt-0"><code>{guide.command}</code></pre></article>)}</div></div></section>
 
     <footer className="border-t border-line"><div className="mx-auto flex max-w-5xl flex-col gap-5 px-6 py-9 text-sm text-[#77736b] sm:flex-row sm:items-center sm:justify-between lg:px-8"><span className="font-mono">npx tibo · MIT · Built in public</span><div className="flex items-center gap-5"><a href="#learn" className="transition-colors hover:text-paper">Learn</a><a href="https://github.com/ankanganguly24/tibo" target="_blank" rel="noreferrer" className="transition-colors hover:text-paper">GitHub ↗</a></div></div></footer>
   </main>;
