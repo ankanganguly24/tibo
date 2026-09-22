@@ -14,6 +14,7 @@
 - Added `tibo summary` and its JSON contract for fresh agent sessions.
 - Classified potentially destructive schema and migration statements with high
   severity and explicit safety limitations.
+- Added findings for newly exported TypeScript and JavaScript symbols.
 - Expanded the roadmap with concrete user outcomes, implementation slices,
   evidence requirements, and phase exit criteria.
 - Added a living project timeline and recorded dependency evidence as the next

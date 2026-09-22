@@ -161,6 +161,19 @@ export function detect(diff: string, cwd?: string): Finding[] {
           : "This identifies persistence-related edits but does not assess migration safety or rollback behavior."
       });
     }
+    const exported = added.text.match(/\bexport\s+(?:default\s+)?(?:async\s+)?(?:function|class|const|let|var|type|interface|enum)\s+([A-Za-z_$][A-Za-z0-9_$]*)/);
+    if (exported) {
+      const name = exported[1];
+      findings.push({
+        id: stableId("interface", `${added.path}:${added.line}:${name}`),
+        kind: "interface",
+        summary: `new exported symbol   ${name}`,
+        evidence: [{ path: added.path, line: added.line, detail: `Exports ${name}` }],
+        confidence: "medium",
+        severity: "medium",
+        limitation: "An export is a possible public interface change; this diff cannot prove whether another package or consumer imports it."
+      });
+    }
   }
   const oldDeps = manifestDependencies(oldPackageText);
   const newDeps = manifestDependencies(newPackageText);

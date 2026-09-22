@@ -44,6 +44,7 @@ Current detectors are narrow and explainable:
 - **Environment:** new `process.env` reads using dot or bracket notation.
 - **Schema:** SQL and migration-path changes, with a high-severity marker for
   potentially destructive operations.
+- **Interface:** newly exported TypeScript and JavaScript symbols.
 
 Public interfaces, module overlap, richer schema safety, and requested-scope
 analysis are planned. Each detector returns evidence, confidence, and a

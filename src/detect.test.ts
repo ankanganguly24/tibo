@@ -169,3 +169,19 @@ test("classifies destructive migration statements separately", () => {
   assert.equal(findings[1]?.summary, "schema or persistence change");
   assert.equal(findings[1]?.severity, "medium");
 });
+
+
+test("detects newly exported TypeScript symbols", () => {
+  const diff = [
+    "+++ b/src/auth/session.ts",
+    "@@ -1,0 +1,2 @@",
+    "+export type Session = { userId: string };",
+    "+export function createSession(userId: string) { return { userId }; }",
+  ].join("\n");
+  const findings = detect(diff).filter((item) => item.kind === "interface");
+  assert.deepEqual(findings.map((item) => item.summary), [
+    "new exported symbol   Session",
+    "new exported symbol   createSession",
+  ]);
+  assert.equal(findings[0]?.severity, "medium");
+});

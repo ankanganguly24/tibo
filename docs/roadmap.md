@@ -103,8 +103,9 @@ can verify.
 
 ### Public behavior and module boundaries
 
-- [ ] Detect new or changed exported functions, types, routes, CLI commands,
-  event names, and serialized fields.
+- [x] Detect newly exported functions, types, classes, constants, and interfaces.
+- [ ] Detect changed exported symbols, routes, CLI commands, event names, and
+  serialized fields.
 - [ ] Detect a new module whose role overlaps an existing module using imports,
   filenames, exports, and referenced symbols as evidence.
 - [ ] Report the existing owner and the new owner side by side so the user can
