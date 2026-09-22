@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- Added a portable `tibo-review` skill for Codex and Claude Code that uses the
+  local CLI and records explicit decisions.
+- Added `tibo decide <id> <keep|reject|later>` for non-interactive integrations.
+- Added line-level evidence for dependencies, environment variables, schema
+  signals, untracked files, and rendered ledger entries.
+- Added bounded lexical repository matches for possible existing dependencies or
+  internal utilities, with an explicit non-equivalence limitation.
 - Expanded the roadmap with concrete user outcomes, implementation slices,
   evidence requirements, and phase exit criteria.
 - Added a living project timeline and recorded dependency evidence as the next

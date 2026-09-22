@@ -99,9 +99,10 @@ Tibo starts with TypeScript and JavaScript repositories. The first release is a 
 
 ## Status
 
-Pre-1.0 and honest about it. The first local scanner, deterministic findings,
-and durable ledger are now in place. Interactive review is the next slice. See
-the [roadmap](docs/roadmap.md).
+Pre-1.0 and honest about it. The local scanner, evidence-rich findings,
+decision ledger, and portable agent-review skill are in place. The next major
+capability is `tibo summary` for fresh agent sessions. See the
+[roadmap](docs/roadmap.md).
 
 ## Documentation
 

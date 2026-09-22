@@ -11,7 +11,8 @@ entry at the top.
 - Product narrowed to a local-first decision ledger for coding-agent changes.
 - TypeScript CLI scaffolded with `scan` and `scan --json` commands.
 - Working-tree and untracked-file diffs are collected locally.
-- Dependency additions and environment-variable references are detected.
+- Dependency additions, environment-variable references, and basic schema
+  changes are detected.
 - Dependency findings include manifest, added usage, and possible repository
   matches with line numbers where available.
 - Findings have stable IDs and support keep, reject, later, and why decisions.
@@ -25,15 +26,16 @@ entry at the top.
 
 ### In progress
 
-**Agent workflow validation.** The first skill can run the CLI and record
-explicit decisions. Repository matches are now reported as bounded lexical
-evidence, never as proof of equivalence.
+**Fresh-session continuity.** The scan, decision command, ledger, and portable
+skill workflow are working. The next useful surface is a compact summary that
+lets a new agent understand confirmed, rejected, deferred, and unresolved work.
 
 ### Next
 
-1. Install and dogfood the Codex skill on Tibo's own changes.
-2. Validate the same portable skill instructions in Claude Code.
-3. Only then move to schema safety, module overlap, and Git scope checks.
+1. Add `tibo summary` with stable JSON and readable terminal output.
+2. Make the skill consume the summary at the start of a fresh session.
+3. Validate the portable skill instructions in Codex and Claude Code installs.
+4. Only then move to richer schema safety, module overlap, and Git scope checks.
 
 ### Pending / deliberately later
 
