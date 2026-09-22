@@ -72,12 +72,15 @@ export function detect(diff: string): Finding[] {
   const lines = addedLines(diff);
   let oldPackageText = "";
   let newPackageText = "";
+  const manifestLines: { text: string; added: boolean }[] = [];
   let file = "unknown";
   for (const line of diff.split("\n")) {
     const path = currentFile(line);
     if (path) file = path;
-    if (line.startsWith("+") && !line.startsWith("+++")) {
-      if (file === "package.json") newPackageText += `${line.slice(1)}\n`;
+    if (file === "package.json" && (line.startsWith("+") || line.startsWith(" "))) {
+      const added = line.startsWith("+");
+      manifestLines.push({ text: line.slice(1), added });
+      if (added && !line.startsWith("+++")) newPackageText += `${line.slice(1)}\n`;
     }
     if (line.startsWith("-") && !line.startsWith("---") && file === "package.json") oldPackageText += `${line.slice(1)}\n`;
   }
@@ -94,11 +97,22 @@ export function detect(diff: string): Finding[] {
   const oldDeps = manifestDependencies(oldPackageText);
   const newDeps = manifestDependencies(newPackageText);
   // Context lines in a unified diff carry a leading space, so a reformatted
-  // manifest is not always valid JSON on either side. Recover direct additions
-  // from the added manifest lines as a final, conservative fallback.
-  for (const line of lines.filter((item) => item.path === "package.json")) {
-    for (const entry of line.text.matchAll(/"([^"]+)"\s*:\s*"([^"]+)"/g)) {
-      if (!newDeps[entry[1]] && !["name", "version", "description", "private", "type", "license"].includes(entry[1])) newDeps[entry[1]] = entry[2];
+  // manifest is not always valid JSON on either side. Recover additions only
+  // while inside a dependency block; never treat scripts or engines as deps.
+  let dependencySection: "dependencies" | "devDependencies" | undefined;
+  for (const line of manifestLines) {
+    const header = line.text.match(/"(dependencies|devDependencies)"\s*:\s*\{/);
+    if (header) {
+      dependencySection = header[1] as "dependencies" | "devDependencies";
+      continue;
+    }
+    if (dependencySection && /^\s*},?\s*$/.test(line.text)) {
+      dependencySection = undefined;
+      continue;
+    }
+    if (dependencySection) {
+      const entry = line.text.match(/^\s*"([^"]+)"\s*:\s*"([^"]+)"\s*,?\s*$/);
+      if (line.added && entry && !newDeps[entry[1]]) newDeps[entry[1]] = entry[2];
     }
   }
   for (const [name, version] of Object.entries(newDeps)) {

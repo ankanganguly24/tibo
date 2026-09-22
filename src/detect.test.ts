@@ -78,3 +78,27 @@ test("flags a dependency with no direct added usage without guessing", () => {
   assert.match(finding.limitation, /No import or require/);
   assert.equal(finding.evidence.length, 1);
 });
+
+test("does not mistake scripts or engines for dependencies in a reformatted manifest", () => {
+  const diff = [
+    "--- a/package.json",
+    "+++ b/package.json",
+    "@@ -1,8 +1,12 @@",
+    "-  \"dependencies\": {}",
+    "+{",
+    "+  \"name\": \"tibo\",",
+    "+  \"scripts\": {",
+    "+    \"build\": \"tsc -p tsconfig.json\"",
+    "+  },",
+    "+  \"engines\": {",
+    "+    \"node\": \">=20\"",
+    "+  },",
+    "+  \"dependencies\": {",
+    "+    \"stripe\": \"^16.0.0\"",
+    "+  }",
+    "+}",
+  ].join("\n");
+  const findings = detect(diff).filter((item) => item.kind === "dependency");
+  assert.equal(findings.length, 1);
+  assert.equal(findings[0]?.summary, "dependency added  stripe ^16.0.0");
+});
