@@ -38,7 +38,7 @@ node dist/index.js scan
 
 Run it from a Git repository with a working-tree change. Tibo also includes
 untracked files in the local scan, so a newly created file is visible before
-it is staged. Use `node dist/index.js scan --json` for machine-readable output.
+it is staged. Use `node dist/index.js scan --json` for machine-readable output. Use `node dist/index.js summary --json` to give a fresh agent the project decision history.
 
 ## Why
 
@@ -91,7 +91,7 @@ The ledger is Tibo's durable artifact. It records only decisions that matter to 
   confirmed_at: 2026-09-18
 ~~~
 
-The next agent session reads the confirmed choices and unresolved questions. The ledger should get smaller and more useful over time, not become another project manual.
+A fresh agent session can run `tibo summary` to see kept, rejected, deferred, and unresolved work. The ledger should get smaller and more useful over time, not become another project manual.
 
 ## Scope
 

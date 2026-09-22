@@ -9,6 +9,18 @@ Use Tibo as a local evidence checkpoint after an agent has edited a repository.
 Tibo is the source of truth for what changed. Do not recreate its detection logic
 or infer conclusions that are not present in its findings.
 
+## Start with project context
+
+At the start of a fresh agent session, run:
+
+```bash
+tibo summary --json
+```
+
+Use it to understand kept, rejected, deferred, and unresolved decisions. Do
+not treat a rejected decision as an unresolved request unless the user asks to
+revisit it.
+
 ## Run the review
 
 From the repository being changed, run the available Tibo command:
@@ -20,6 +32,7 @@ tibo scan --json
 If the `tibo` binary is not installed, use the repository's local build:
 
 ```bash
+node /absolute/path/to/tibo/dist/index.js summary --json
 node /absolute/path/to/tibo/dist/index.js scan --json
 ```
 

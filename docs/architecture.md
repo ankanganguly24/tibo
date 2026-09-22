@@ -14,6 +14,10 @@ Git repository
   -> optional host-agent remediation
   -> rescan and test
 
+Fresh agent session
+  -> tibo summary
+  -> current ledger + unresolved findings
+
 Codex or Claude skill
   -> runs scan --json
   -> explains only returned evidence
@@ -61,7 +65,9 @@ type Finding = {
 ~~~
 
 The machine-readable contract is defined in
-[`schemas/finding.schema.json`](../schemas/finding.schema.json).
+[`schemas/finding.schema.json`](../schemas/finding.schema.json). `tibo summary
+--json` provides the session-level contract for ledger decisions and unresolved
+findings.
 
 ## Ledger and decisions
 

@@ -19,6 +19,7 @@ entry at the top.
 - `tibo decide` records decisions for non-interactive agent skills.
 - A portable `tibo-review` skill is included for Codex and Claude Code.
 - The skill supports explicit-approval remediation followed by tests and a rescan.
+- `tibo summary` reports ledger decisions and current unresolved findings for a fresh session.
 - Confirmed decisions persist in `.tibo/decisions.json` and
   `.tibo/decisions.md`.
 - Root tests pass and the CLI builds successfully.
@@ -27,18 +28,16 @@ entry at the top.
 
 ### In progress
 
-**Fresh-session continuity.** The scan, decision command, ledger, and portable
-skill workflow are working. Remediation is now an opt-in host-agent step that
-is verified by tests and a rescan. The next useful surface is a compact summary
-that lets a new agent understand confirmed, rejected, deferred, and unresolved
-work.
+**Phase 3 handoff.** The scan, decision command, ledger, portable skill, and
+remediation workflow are working. `tibo summary` now gives a fresh agent the
+confirmed, rejected, deferred, and unresolved state. The next work is richer
+schema safety and public/module boundary detection.
 
 ### Next
 
-1. Add `tibo summary` with stable JSON and readable terminal output.
-2. Make the skill consume the summary at the start of a fresh session.
-3. Validate the portable skill instructions in Codex and Claude Code installs.
-4. Only then move to richer schema safety, module overlap, and Git scope checks.
+1. Validate the portable skill instructions in Codex and Claude Code installs.
+2. Add richer schema safety and destructive migration evidence.
+3. Add public-interface and module-overlap findings.
 
 ### Pending / deliberately later
 

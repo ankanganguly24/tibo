@@ -144,8 +144,8 @@ the engineer repeating the whole history or sending the repository elsewhere.
 
 ### Handoff loop
 
-- [ ] Add a concise `tibo summary` for the next session: confirmed decisions,
-  unresolved findings, changed scope, and evidence links.
+- [x] Add a concise `tibo summary` for the next session: confirmed decisions,
+  unresolved findings, and evidence links.
 - [ ] Let Codex consume the summary through files already in the repository;
   no hosted memory or mandatory integration.
 - [ ] Keep interactive review and CI mode behavior identical at the finding

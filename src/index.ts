@@ -4,6 +4,7 @@ import { stdin as input, stdout as output } from "node:process";
 import { detect, renderFindings } from "./detect.js";
 import { isGitRepository, workingDiff } from "./git.js";
 import { applyLedger, loadLedger, recordDecision } from "./ledger.js";
+import { renderSummary, summarize } from "./summary.js";
 
 const cwd = process.cwd();
 const argv = process.argv.slice(2);
@@ -11,7 +12,7 @@ const command = argv[0];
 const args = new Set(argv);
 
 if (args.has("--help") || args.has("-h")) {
-  console.log("tibo — surface structural decisions in a coding-agent diff\n\nUsage:\n  tibo scan                         inspect the working diff\n  tibo scan --json                  print machine-readable findings\n  tibo decide <id> <keep|reject|later>  record a reviewed finding\n  tibo --help                       show this help");
+  console.log("tibo — surface structural decisions in a coding-agent diff\n\nUsage:\n  tibo scan                         inspect the working diff\n  tibo scan --json                  print machine-readable findings\n  tibo summary [--json]             show ledger and unresolved work\n  tibo decide <id> <keep|reject|later>  record a reviewed finding\n  tibo --help                       show this help");
   process.exit(0);
 }
 
@@ -34,7 +35,15 @@ if (command === "decide") {
   process.exit(0);
 }
 
-const findings = applyLedger(detect(workingDiff(cwd), cwd), loadLedger(cwd)).filter((finding) => finding.decision === "unreviewed");
+const ledger = loadLedger(cwd);
+const currentFindings = applyLedger(detect(workingDiff(cwd), cwd), ledger);
+if (command === "summary") {
+  const summary = summarize(currentFindings, ledger);
+  if (args.has("--json")) console.log(JSON.stringify(summary, null, 2));
+  else console.log(renderSummary(summary));
+  process.exit(0);
+}
+const findings = currentFindings.filter((finding) => finding.decision === "unreviewed");
 if (args.has("scan") || args.size === 0) {
   if (args.has("--json")) { console.log(JSON.stringify(findings, null, 2)); process.exit(0); }
   console.log(renderFindings(findings));
