@@ -6,3 +6,5 @@ docs/
 skills/
 .github/
 *.tgz
+dist/detect.test.js
+dist/summary.test.js
