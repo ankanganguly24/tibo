@@ -30,9 +30,9 @@ const steps = [
 ] as const;
 
 const guides = [
-  { id: "guide-first-scan", number: "Guide 01", title: "Run your first review", description: "Install Tibo, let an agent make a change, then inspect the working diff.", command: "npm install\nnpm run build\nnode dist/index.js scan" },
-  { id: "guide-decide", number: "Guide 02", title: "Read and decide", description: "Follow the evidence, then keep, reject, or defer one finding.", command: "node dist/index.js scan --json\nnode dist/index.js decide <finding-id> keep" },
-  { id: "guide-repair", number: "Guide 03", title: "Repair with approval", description: "Reject a change, approve a narrow Codex repair, test it, and scan again.", command: "node dist/index.js decide <id> reject\n# approve the repair\ntibo summary" },
+  { id: "guide-first-scan", number: "Guide 01", title: "Run your first review", description: "Run Tibo after an agent makes a change, then inspect the working diff.", command: "npx @goankan/tibo scan" },
+  { id: "guide-decide", number: "Guide 02", title: "Read and decide", description: "Follow the evidence, then keep, reject, or defer one finding.", command: "npx @goankan/tibo scan --json\nnpx @goankan/tibo decide <finding-id> keep" },
+  { id: "guide-repair", number: "Guide 03", title: "Repair with approval", description: "Reject a change, approve a narrow Codex repair, test it, and scan again.", command: "npx @goankan/tibo decide <id> reject\n# approve the repair\nnpx @goankan/tibo scan\nnpx @goankan/tibo summary" },
 ] as const;
 
 export default function Home() {
