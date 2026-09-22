@@ -15,13 +15,13 @@ Git repository
   -> rescan and test
 
 Fresh agent session
-  -> tibo summary
+  -> npx --yes @goankan/tibo@0.1.1 summary
   -> current ledger + unresolved findings
 
 Codex or Claude skill
-  -> runs scan --json
+  -> runs npx --yes @goankan/tibo@0.1.1 scan --json
   -> explains only returned evidence
-  -> runs decide <id> <decision>
+  -> runs npx --yes @goankan/tibo@0.1.1 decide <id> <decision>
 ~~~
 
 ## Scanner
@@ -79,14 +79,14 @@ type Finding = {
   summary: string;
   evidence: Array<{ path: string; line?: number; detail: string }>;
   confidence: 'high' | 'medium' | 'low';
-  severity?: 'low' | 'medium' | 'high';
+  severity: 'low' | 'medium' | 'high';
   limitation: string;
   decision?: 'unreviewed' | 'keep' | 'reject' | 'later';
 };
 ~~~
 
 The machine-readable contract is defined in
-[`schemas/finding.schema.json`](../schemas/finding.schema.json). `tibo summary
+[`schemas/finding.schema.json`](../schemas/finding.schema.json). `npx --yes @goankan/tibo@0.1.1 summary
 --json` provides the session-level contract for ledger decisions and unresolved
 findings.
 
@@ -94,7 +94,7 @@ findings.
 
 The ledger stores a finding's human state and timestamp in
 `.tibo/decisions.json` and the reviewable `.tibo/decisions.md` file. Evidence
-paths and line numbers are retained. `tibo decide <id> <keep|reject|later>`
+paths and line numbers are retained. `npx --yes @goankan/tibo@0.1.1 decide <id> <keep|reject|later>`
 lets agent skills record a decision without taking ownership away from the
 engineer. A later scan recognizes the stable finding ID and does not ask the
 same question again; deferred findings remain in the ledger for a future

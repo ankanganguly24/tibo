@@ -25,7 +25,7 @@ $ tibo
 Nothing leaves your machine. No account, API key, or model call is required.
 
 ~~~bash
-npx @goankan/tibo
+npx --yes @goankan/tibo@0.1.1
 ~~~
 
 ## Try the first slice
@@ -93,7 +93,7 @@ The ledger is Tibo's durable artifact. It records only decisions that matter to 
   confirmed_at: 2026-09-18
 ~~~
 
-A fresh agent session can run `tibo summary` to see kept, rejected, deferred, and unresolved work. The ledger should get smaller and more useful over time, not become another project manual.
+A fresh agent session can run `npx --yes @goankan/tibo@0.1.1 summary` to see kept, rejected, deferred, and unresolved work. The ledger should get smaller and more useful over time, not become another project manual.
 
 ## Scope
 
@@ -133,7 +133,7 @@ npm run dev
 
 Tibo includes a portable review skill for Codex and Claude Code. It runs the
 local CLI, presents evidence from `scan --json`, and records explicit decisions
-with `tibo decide`. Install it from [`skills/tibo-review/`](skills/tibo-review/)
+with `npx --yes @goankan/tibo@0.1.1 decide`. Install it from [`skills/tibo-review/`](skills/tibo-review/)
 and see the [integration guide](docs/integrations.md).
 
 The skill also supports optional remediation: after you reject a finding and

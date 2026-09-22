@@ -69,9 +69,9 @@ test("dogfoods the fresh-agent handoff through the CLI summary", () => {
     assert.ok(summary.decisions.later.some((entry) => entry.id === schema.id));
     assert.ok(!summary.unresolved.some((entry) => entry.id === dependency.id));
     const skill = readFileSync(join(process.cwd(), "skills", "tibo-review", "SKILL.md"), "utf8");
-    assert.match(skill, /tibo summary --json/);
-    assert.match(skill, /tibo scan --json/);
-    assert.match(skill, /tibo decide <finding-id> keep/);
+    assert.match(skill, /@goankan\/tibo@0\.1\.1 summary --json/);
+    assert.match(skill, /@goankan\/tibo@0\.1\.1 scan --json/);
+    assert.match(skill, /@goankan\/tibo@0\.1\.1 decide <finding-id> keep/);
     assert.match(skill, /approves a repair plan/);
   } finally {
     rmSync(root, { recursive: true, force: true });

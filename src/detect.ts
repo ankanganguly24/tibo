@@ -90,6 +90,10 @@ function moduleOverlapEvidence(path: string, cwd: string, changedPaths: Set<stri
   const newExports = exportNames(addedText);
   const newImports = importedModuleRefs(addedText);
   const newImportedSymbols = importedSymbols(addedText);
+  const reExportedImported = newImportedSymbols.filter((name) => {
+    const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    return new RegExp(`\\bexport\\s*\\{[^}]*\\b${escaped}\\b[^}]*\\}`).test(addedText);
+  });
   const evidence: Evidence[] = [];
   const files = repositoryFiles(cwd);
   const candidates = new Set(files.map((absolute) => relative(cwd, absolute) || absolute));
@@ -102,8 +106,8 @@ function moduleOverlapEvidence(path: string, cwd: string, changedPaths: Set<stri
     const candidateExports = exportNames(candidateContent);
     const sharedSymbols = [...new Set([...newExports, ...newImportedSymbols])].filter((name) => candidateExports.includes(name));
     const directImport = newImports.map((reference) => resolveModuleReference(path, reference, candidates)).find((resolved) => resolved === candidate);
-    if (directImport) evidence.push({ path: candidate, detail: "Possible overlapping module; new file imports this existing module" });
-    else if (sharedSymbols.length) evidence.push({ path: candidate, detail: `Possible overlapping module; shares exported symbol: ${sharedSymbols[0]}` });
+    if (directImport && (overlap.length || reExportedImported.length)) evidence.push({ path: candidate, detail: "Possible overlapping module; new file imports this existing module and shares a module signal" });
+    else if (sharedSymbols.length && (!directImport || reExportedImported.length)) evidence.push({ path: candidate, detail: `Possible overlapping module; shares exported symbol: ${sharedSymbols[0]}` });
     else if (overlap.length) evidence.push({ path: candidate, detail: `Possible overlapping module; matched filename token: ${overlap[0]}` });
     if (evidence.length >= 5) break;
   }
@@ -112,19 +116,20 @@ function moduleOverlapEvidence(path: string, cwd: string, changedPaths: Set<stri
 
 function schemaSignal(path: string, text: string): { detail: string; destructive: boolean } | undefined {
   if (path === ".tibo" || path.startsWith(".tibo/")) return undefined;
-  const destructive = /\bDROP\s+(TABLE|INDEX|COLUMN|TYPE|CONSTRAINT)\b/i.test(text)
+  const schemaFile = /(?:^|\/)(?:schema|schemas|models|entities|migrations?)(?:\/|\.|$)/i.test(path)
+    || /\.(?:sql|prisma|drizzle|schema)$/i.test(path);
+  const seedFile = /(?:^|\/)(?:seeds?|fixtures?)(?:\/|$)|(?:^|\/)(?:seed|fixtures?)\.(?:[cm]?[jt]sx?)$/i.test(path);
+  const destructive = schemaFile && (/\bDROP\s+(TABLE|INDEX|COLUMN|TYPE|CONSTRAINT)\b/i.test(text)
     || /\bALTER\s+TABLE\b.*\bDROP\b/i.test(text)
     || /\bALTER\s+TABLE\b.*\bALTER\s+COLUMN\b/i.test(text)
-    || /\b(?:remove|drop)(?:Index|Constraint|Column|Table)\b/i.test(text);
-  const sql = /\b(CREATE|ALTER|DROP)\s+(TABLE|INDEX|UNIQUE\s+INDEX|TYPE|CONSTRAINT)\b/i.test(text)
+    || /\b(?:remove|drop)(?:Index|Constraint|Column|Table)\b/i.test(text));
+  const sql = schemaFile && (/\b(CREATE|ALTER|DROP)\s+(TABLE|INDEX|UNIQUE\s+INDEX|TYPE|CONSTRAINT)\b/i.test(text)
     || /\b(?:ADD|DROP)\s+CONSTRAINT\b/i.test(text)
-    || /\bINSERT\s+INTO\b/i.test(text);
-  const schemaPath = /(?:^|\/)(?:schema|schemas|models|entities|migrations?)(?:\/|\.|$)/i.test(path) || /\.(?:prisma|drizzle|schema)$/i.test(path);
-  const orm = /\b(?:model|enum)\s+[A-Za-z_$][A-Za-z0-9_$]*\b/.test(text)
+    || /\bINSERT\s+INTO\b/i.test(text));
+  const orm = schemaFile && (/\b(?:model|enum)\s+[A-Za-z_$][A-Za-z0-9_$]*\b/.test(text)
     || /@@(?:index|unique|id|map)\b|@(?:id|unique|index|relation)\b|\b(?:references|hasMany|belongsTo|createTable|addConstraint|createIndex)\b/i.test(text)
-    || (schemaPath && /\b(?:CREATE|ALTER|DROP)\s+(?:TABLE|INDEX|TYPE|CONSTRAINT)\b/i.test(text));
-  const seed = /(?:^|\/)(?:seeds?|fixtures?)(?:\/|$)|(?:^|\/)(?:seed|fixtures?)\.(?:[cm]?[jt]sx?)$/i.test(path)
-    || /\b(?:INSERT\s+INTO|createMany|\.create\s*\(|\.insert\s*\(|seed\s*\()/i.test(text);
+    || /\b(?:CREATE|ALTER|DROP)\s+(?:TABLE|INDEX|TYPE|CONSTRAINT)\b/i.test(text));
+  const seed = seedFile && /\b(?:INSERT\s+INTO|createMany|\.create\s*\(|\.insert\s*\(|seed\s*\()/i.test(text);
   if (!sql && !orm && !seed) return undefined;
   return {
     detail: destructive ? text.trim() || "Potentially destructive schema operation" : seed ? `Seed or fixture data write: ${text.trim()}` : orm && !sql ? "ORM schema, model, index, or constraint change" : text.trim() || "Schema or persistence statement",
@@ -345,7 +350,7 @@ export function detect(diff: string, cwd?: string): Finding[] {
         summary: `possible overlapping module   ${path}`,
         evidence: [{ path, detail: "New file in the working diff" }, ...overlap],
         ...detectorPolicy.module,
-        limitation: "Filename overlap is a review prompt, not proof that the modules have the same responsibility."
+        limitation: "Filename, import, and symbol overlap are review prompts, not proof that the modules have the same responsibility."
       });
     }
   }

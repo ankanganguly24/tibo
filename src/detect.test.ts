@@ -267,6 +267,40 @@ test("uses direct imports and shared exports as module overlap evidence", () => 
   }
 });
 
+test("does not treat ordinary application writes as seed or schema changes", () => {
+  const diff = [
+    "+++ b/src/repositories/orders.ts",
+    "@@ -1,0 +1,2 @@",
+    "+export function createOrder(data: unknown) {",
+    "+  return orderRepository.create(data);",
+    "+}",
+    "+++ b/src/repositories/raw.ts",
+    "@@ -1,0 +1,1 @@",
+    "+const query = \"INSERT INTO orders (id) VALUES (?)\";",
+  ].join("\n");
+  assert.deepEqual(detect(diff).filter((item) => item.kind === "schema"), []);
+});
+
+test("does not treat a shared utility import as module overlap", () => {
+  const root = mkdtempSync(join(tmpdir(), "tibo-module-noise-"));
+  mkdirSync(join(root, "src"));
+  writeFileSync(join(root, "src", "logger.ts"), "export const logger = console;");
+  const diff = [
+    "diff --git a/src/payments.ts b/src/payments.ts",
+    "new file mode 100644",
+    "--- /dev/null",
+    "+++ b/src/payments.ts",
+    "@@ -0,0 +1,2 @@",
+    "+import { logger } from './logger';",
+    "+export function charge() { logger.log('charge'); }",
+  ].join("\n");
+  try {
+    assert.deepEqual(detect(diff, root).filter((item) => item.kind === "module"), []);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
 test("detects ORM indexes, constraints, and seed writes", () => {
   const diff = [
     "+++ b/prisma/schema.prisma",

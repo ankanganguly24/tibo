@@ -11,10 +11,10 @@ or infer conclusions that are not present in its findings.
 
 ## Start with project context
 
-At the start of a fresh agent session, run:
+At the start of a fresh agent session, run the pinned release:
 
 ```bash
-npx @goankan/tibo summary --json
+npx --yes @goankan/tibo@0.1.1 summary --json
 ```
 
 Use it to understand kept, rejected, deferred, and unresolved decisions. Do
@@ -26,7 +26,7 @@ revisit it.
 From the repository being changed, run the available Tibo command:
 
 ```bash
-npx @goankan/tibo scan --json
+npx --yes @goankan/tibo@0.1.1 scan --json
 ```
 
 If the `tibo` binary is not installed, use the repository's local build:
@@ -62,9 +62,9 @@ found no supported structural decisions.
 After the user chooses, record each decision with its stable ID:
 
 ```bash
-npx @goankan/tibo decide <finding-id> keep
-npx @goankan/tibo decide <finding-id> reject
-npx @goankan/tibo decide <finding-id> later
+npx --yes @goankan/tibo@0.1.1 decide <finding-id> keep
+npx --yes @goankan/tibo@0.1.1 decide <finding-id> reject
+npx --yes @goankan/tibo@0.1.1 decide <finding-id> later
 ```
 
 If using a local build, replace `tibo` with the same `node .../dist/index.js`
@@ -94,7 +94,7 @@ After approval:
 
 1. Make the smallest code change that addresses the rejected finding.
 2. Run the relevant tests or build command.
-3. Run `npx @goankan/tibo scan --json` again.
+3. Run `npx --yes @goankan/tibo@0.1.1 scan --json` again.
 4. Report whether the original finding disappeared, remains, or changed.
 5. Keep the original rejection in the ledger as the decision record.
 

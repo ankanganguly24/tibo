@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.1.1
+
+- Pin the portable skill and public guides to an immutable package version.
+- Review staged and unstaged tracked changes from one `HEAD` baseline.
+- Restrict schema and seed signals to schema or seed paths to avoid runtime-write noise.
+- Require stronger evidence before labeling a directly imported module as overlapping.
+- Add regression coverage for staged changes and the new false-positive cases.
+
 ## Unreleased
 
 - Added a portable `tibo-review` skill for Codex and Claude Code that uses the

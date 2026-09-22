@@ -48,7 +48,7 @@ reports, and any future model-assisted explanation.
 
 **User:** a solo engineer has just let an agent change a TypeScript repository.
 
-**Outcome:** `tibo scan` presents a short inbox of structural decisions. Each
+**Outcome:** `npx --yes @goankan/tibo@0.1.1 scan` presents a short inbox of structural decisions. Each
 finding has a stable ID, evidence, and a keep/reject/later decision that is
 remembered in `.tibo/`.
 
@@ -58,7 +58,7 @@ remembered in `.tibo/`.
 - [x] Read tracked and untracked working-tree changes locally.
 - [x] Detect newly added dependencies and environment-variable references.
 - [x] Render interactive terminal decisions and machine-readable JSON.
-- [x] Record decisions non-interactively with `tibo decide` for agent skills.
+- [x] Record decisions non-interactively with `npx --yes @goankan/tibo@0.1.1 decide` for agent skills.
 - [x] Persist confirmed decisions in `.tibo/decisions.json` and
   `.tibo/decisions.md`.
 - [x] Build and test the CLI with no account, API key, or model call.
@@ -147,7 +147,7 @@ the engineer repeating the whole history or sending the repository elsewhere.
 
 ### Handoff loop
 
-- [x] Add a concise `tibo summary` for the next session: confirmed decisions,
+- [x] Add a concise `npx --yes @goankan/tibo@0.1.1 summary` for the next session: confirmed decisions,
   unresolved findings, and evidence links.
 - [x] Let Codex consume the summary through files already in the repository;
   no hosted memory or mandatory integration.

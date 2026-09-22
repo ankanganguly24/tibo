@@ -12,8 +12,8 @@ Copy `skills/tibo-review/` into the host's skill directory:
 - Claude Code: `.claude/skills/tibo-review/` in the repository, or the user's
   configured Claude skills directory.
 
-Build Tibo once, or install the published CLI when it is available. The skill
-runs `tibo scan --json` and `tibo decide ...` locally, then uses the host agent
+Build Tibo once, or use the published CLI. The skill
+runs `npx --yes @goankan/tibo@0.1.1 scan --json` and `npx --yes @goankan/tibo@0.1.1 decide ...` locally, then uses the host agent
 only to explain the returned evidence and collect the human decision.
 
 ## Trust boundary
@@ -32,8 +32,8 @@ ledger; Tibo itself never edits source files.
 
 ## npm package
 
-The package metadata is prepared for `@goankan/tibo@0.1.0`. After the maintainer logs in
-to npm, publish it with:
+The next package release is `@goankan/tibo@0.1.1`. Publish it before asking
+users or agent skills to run the pinned commands below:
 
 ```bash
 npm publish --access public
@@ -42,7 +42,7 @@ npm publish --access public
 Then users can run:
 
 ```bash
-npx @goankan/tibo scan
+npx --yes @goankan/tibo@0.1.1 scan
 ```
 
 Until the first npm release, use `npm run build` followed by

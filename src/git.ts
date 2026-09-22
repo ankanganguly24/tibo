@@ -7,7 +7,8 @@ export function git(args: string[], cwd = process.cwd()): string {
 
 export function workingDiff(cwd = process.cwd()): string {
   try {
-    const tracked = git(["diff", "--no-ext-diff", "--unified=0", "--no-color"], cwd);
+    // Compare with HEAD so staged and unstaged tracked edits are reviewed together.
+    const tracked = git(["diff", "HEAD", "--no-ext-diff", "--unified=0", "--no-color"], cwd);
     const untracked = git(["status", "--porcelain=v1", "--untracked-files=all"], cwd)
       .split("\n")
       .filter((line) => line.startsWith("?? "))

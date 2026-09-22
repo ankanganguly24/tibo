@@ -17,10 +17,10 @@ entry at the top.
 - Dependency findings include manifest, added usage, and possible repository
   matches with line numbers where available.
 - Findings have stable IDs and support keep, reject, later, and why decisions.
-- `tibo decide` records decisions for non-interactive agent skills.
+- `npx --yes @goankan/tibo@0.1.1 decide` records decisions for non-interactive agent skills.
 - A portable `tibo-review` skill is included for Codex and Claude Code.
 - The skill supports explicit-approval remediation followed by tests and a rescan.
-- `tibo summary` reports ledger decisions and current unresolved findings for a fresh session.
+- `npx --yes @goankan/tibo@0.1.1 summary` reports ledger decisions and current unresolved findings for a fresh session.
 - Confirmed decisions persist in `.tibo/decisions.json` and
   `.tibo/decisions.md`.
 - Root tests pass and the CLI builds successfully.
@@ -30,7 +30,7 @@ entry at the top.
 ### In progress
 
 **Phase 3 handoff.** The scan, decision command, ledger, portable skill, and
-remediation workflow are working. `tibo summary` now gives a fresh agent the
+remediation workflow are working. `npx --yes @goankan/tibo@0.1.1 summary` now gives a fresh agent the
 confirmed, rejected, deferred, and unresolved state. The next work is richer
 schema safety and public/module boundary detection.
 

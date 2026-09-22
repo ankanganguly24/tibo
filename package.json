@@ -1,6 +1,6 @@
 {
   "name": "@goankan/tibo",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Local-first evidence review for coding-agent changes.",
   "type": "module",
   "bin": {
