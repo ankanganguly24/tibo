@@ -31,10 +31,9 @@ evidence, never as proof of equivalence.
 
 ### Next
 
-1. Preserve line-level evidence in `.tibo/decisions.md`.
-2. Install and dogfood the Codex skill on Tibo's own changes.
-4. Validate the same portable skill instructions in Claude Code.
-5. Only then move to schema safety, module overlap, and Git scope checks.
+1. Install and dogfood the Codex skill on Tibo's own changes.
+2. Validate the same portable skill instructions in Claude Code.
+3. Only then move to schema safety, module overlap, and Git scope checks.
 
 ### Pending / deliberately later
 

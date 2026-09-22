@@ -73,7 +73,7 @@ remembered in `.tibo/`.
 - [x] Explain why the finding was raised using only the evidence Tibo found;
   never claim that two packages are equivalent without showing the match.
 - [x] Include the evidence in terminal output and `scan --json`.
-- [ ] Preserve line-level evidence in the rendered ledger entry so a later
+- [x] Preserve line-level evidence in the rendered ledger entry so a later
   session can review the same decision.
 
 ### Exit criteria
