@@ -32,7 +32,7 @@ ledger; Tibo itself never edits source files.
 
 ## npm package
 
-The package metadata is prepared for `tibo@0.1.0`. After the maintainer logs in
+The package metadata is prepared for `@goankan/tibo@0.1.0`. After the maintainer logs in
 to npm, publish it with:
 
 ```bash
@@ -42,7 +42,7 @@ npm publish --access public
 Then users can run:
 
 ```bash
-npx tibo scan
+npx @goankan/tibo scan
 ```
 
 Until the first npm release, use `npm run build` followed by

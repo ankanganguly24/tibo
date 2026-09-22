@@ -25,7 +25,7 @@ $ tibo
 Nothing leaves your machine. No account, API key, or model call is required.
 
 ~~~bash
-npx tibo
+npx @goankan/tibo
 ~~~
 
 ## Try the first slice
