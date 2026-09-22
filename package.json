@@ -37,7 +37,12 @@
     "url": "https://github.com/ankanganguly24/tibo/issues"
   },
   "files": [
-    "dist",
+    "dist/index.js",
+    "dist/detect.js",
+    "dist/git.js",
+    "dist/ledger.js",
+    "dist/summary.js",
+    "dist/types.js",
     "README.md",
     "LICENSE",
     "schemas/finding.schema.json"
