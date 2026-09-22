@@ -50,17 +50,16 @@ This problem is becoming more visible as agent-written code increases. A 2026 st
 
 Tibo addresses the decision layer. It reads a Git diff, detects structural signals, names the decisions it can support with evidence, and asks you to keep, reject, or defer each one. Confirmed decisions become a small ledger that the next session can read without making you explain the project again.
 
-## What Tibo detects
+## What Tibo detects today
 
-- New or changed dependencies
+- Newly added dependencies, versions, and added import locations
 - New environment variables and configuration reads
-- Schema and persistence changes
-- New modules that overlap existing responsibilities
-- Changed public interfaces and integration boundaries
-- Files that changed outside the declared task scope
+- Basic schema and migration changes
 - Decisions you explicitly confirm, reject, or defer
 
-Detection is structural and local. Tibo reports evidence and uncertainty; it does not pretend that a heuristic is proof of intent.
+Planned detectors will cover public interfaces, module overlap, and change
+scope after the evidence contract is proven. Tibo reports evidence and
+uncertainty; it does not pretend that a heuristic is proof of intent.
 
 ## What Tibo does not do
 
@@ -109,6 +108,7 @@ the [roadmap](docs/roadmap.md).
 - [Architecture](docs/architecture.md)
 - [Roadmap](docs/roadmap.md)
 - [Timeline](docs/timeline.md)
+- [Agent integrations](docs/integrations.md)
 - [Contributing](CONTRIBUTING.md)
 
 ## Website
@@ -124,6 +124,13 @@ cd website
 npm install
 npm run dev
 ~~~
+
+## Agent integrations
+
+Tibo includes a portable review skill for Codex and Claude Code. It runs the
+local CLI, presents evidence from `scan --json`, and records explicit decisions
+with `tibo decide`. Install it from [`skills/tibo-review/`](skills/tibo-review/)
+and see the [integration guide](docs/integrations.md).
 
 ## Development direction
 

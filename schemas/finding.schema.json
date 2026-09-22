@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tiborun.vercel.app/schemas/finding.schema.json",
+  "title": "Tibo finding",
+  "type": "object",
+  "required": ["id", "kind", "summary", "evidence", "confidence", "limitation", "decision"],
+  "properties": {
+    "id": { "type": "string", "pattern": "^[a-f0-9]{12}$" },
+    "kind": { "type": "string", "enum": ["dependency", "env", "schema", "interface"] },
+    "summary": { "type": "string" },
+    "evidence": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["path", "detail"],
+        "properties": {
+          "path": { "type": "string" },
+          "line": { "type": "integer", "minimum": 1 },
+          "detail": { "type": "string" }
+        },
+        "additionalProperties": false
+      }
+    },
+    "confidence": { "type": "string", "enum": ["high", "medium", "low"] },
+    "limitation": { "type": "string" },
+    "decision": { "type": "string", "enum": ["unreviewed", "keep", "reject", "later"] }
+  },
+  "additionalProperties": false
+}

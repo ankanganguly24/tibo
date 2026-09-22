@@ -1,0 +1,24 @@
+# Agent integrations
+
+Tibo has one local evidence engine and a portable review skill. The skill works
+in hosts that load `SKILL.md`, including Codex and Claude Code; it does not add a
+second detector implementation.
+
+## Install the skill
+
+Copy `skills/tibo-review/` into the host's skill directory:
+
+- Codex: `~/.codex/skills/tibo-review/`
+- Claude Code: `.claude/skills/tibo-review/` in the repository, or the user's
+  configured Claude skills directory.
+
+Build Tibo once, or install the published CLI when it is available. The skill
+runs `tibo scan --json` and `tibo decide ...` locally, then uses the host agent
+only to explain the returned evidence and collect the human decision.
+
+## Trust boundary
+
+The CLI decides what evidence exists. The host model may summarize that evidence
+using the task context, but it must not invent repository matches, approve a
+finding, or replace the evidence contract. No repository contents leave the
+machine through Tibo.

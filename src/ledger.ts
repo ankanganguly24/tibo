@@ -26,7 +26,7 @@ export function recordDecision(cwd: string, finding: Finding, decision: Exclude<
 
 function renderLedger(entries: LedgerEntry[]): string {
   const lines = ["# Tibo decision ledger", "", "This file records decisions confirmed while reviewing agent-authored diffs.", ""];
-  for (const entry of entries) lines.push(`## ${entry.summary}`, `- Decision: **${entry.decision}**`, `- Evidence: ${entry.evidence.map((evidence) => `\`${evidence.path}\` — ${evidence.detail}`).join("; ")}`, `- Finding: \`${entry.id}\``, `- Recorded: ${entry.decidedAt}`, "");
+  for (const entry of entries) lines.push(`## ${entry.summary}`, `- Decision: **${entry.decision}**`, `- Evidence: ${entry.evidence.map((evidence) => `\`${evidence.path}${evidence.line ? `:${evidence.line}` : ""}\` — ${evidence.detail}`).join("; ")}`, `- Finding: \`${entry.id}\``, `- Recorded: ${entry.decidedAt}`, "");
   return lines.join("\n");
 }
 

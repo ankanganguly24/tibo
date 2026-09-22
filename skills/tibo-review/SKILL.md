@@ -1,0 +1,65 @@
+---
+name: tibo-review
+description: Review structural decisions made by a coding agent after it changes a TypeScript or JavaScript repository. Use when a coding task is complete and the user needs evidence for new dependencies, environment variables, schema edits, or other architectural changes.
+---
+
+# Tibo review
+
+Use Tibo as a local evidence checkpoint after an agent has edited a repository.
+Tibo is the source of truth for what changed. Do not recreate its detection logic
+or infer conclusions that are not present in its findings.
+
+## Run the review
+
+From the repository being changed, run the available Tibo command:
+
+```bash
+tibo scan --json
+```
+
+If the `tibo` binary is not installed, use the repository's local build:
+
+```bash
+node /absolute/path/to/tibo/dist/index.js scan --json
+```
+
+Do not send the repository, diff, or secrets to a hosted service. Tibo's scan is
+local and does not need an API key or model call.
+
+## Present findings
+
+For each finding, show:
+
+1. The exact summary and finding ID.
+2. Every evidence path and line returned by Tibo.
+3. The confidence.
+4. The limitation, verbatim or faithfully shortened.
+
+Group related evidence under one finding. Never call a dependency unsafe,
+unnecessary, or equivalent to an existing package unless Tibo's evidence proves
+that claim. If Tibo says evidence is missing, say that plainly.
+
+Ask the user to choose `keep`, `reject`, or `later` for each unresolved finding.
+Do not silently choose for them. If there are no findings, report that the scan
+found no supported structural decisions.
+
+## Record decisions
+
+After the user chooses, record each decision with its stable ID:
+
+```bash
+tibo decide <finding-id> keep
+tibo decide <finding-id> reject
+tibo decide <finding-id> later
+```
+
+If using a local build, replace `tibo` with the same `node .../dist/index.js`
+command. Confirm the command succeeded and mention that the decision is stored
+in `.tibo/decisions.json` and `.tibo/decisions.md`.
+
+## Output discipline
+
+Keep the model explanation short. The host agent may explain why a finding could
+matter using the user's task context, but it must separate that explanation from
+Tibo's evidence. Do not paste the entire repository or raw diff into the model
+context when the JSON finding already answers the review question.

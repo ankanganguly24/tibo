@@ -4,7 +4,7 @@ This is the running project record. Update it when scope changes, a capability
 ships, or a user gives us evidence that changes the priority. Keep the newest
 entry at the top.
 
-## Current status — 21 September 2026
+## Current status — 22 September 2026
 
 ### Done
 
@@ -12,7 +12,10 @@ entry at the top.
 - TypeScript CLI scaffolded with `scan` and `scan --json` commands.
 - Working-tree and untracked-file diffs are collected locally.
 - Dependency additions and environment-variable references are detected.
+- Dependency findings include manifest and added usage evidence with line numbers.
 - Findings have stable IDs and support keep, reject, later, and why decisions.
+- `tibo decide` records decisions for non-interactive agent skills.
+- A portable `tibo-review` skill is included for Codex and Claude Code.
 - Confirmed decisions persist in `.tibo/decisions.json` and
   `.tibo/decisions.md`.
 - Root tests pass and the CLI builds successfully.
@@ -21,30 +24,24 @@ entry at the top.
 
 ### In progress
 
-**Evidence-rich dependency findings.** A user identified the highest-signal
-version of the dependency check: show the package and version, the diff lines
-that added it, every usage location, and whether the repository already has an
-existing package or internal utility that covers the same job.
-
-The current detector catches the new dependency, but does not yet provide all
-of that evidence. This is the next implementation slice.
+**Existing alternatives and agent workflow validation.** The first skill can now
+run the CLI and record decisions. The next evidence slice searches for related
+packages or internal utilities without claiming equivalence.
 
 ### Next
 
-1. Add dependency evidence to the finding model and both terminal/JSON output.
-2. Resolve import and usage locations from the changed files.
-3. Search the repository's manifest and source tree for overlapping packages
-   or utilities, with links to the evidence rather than guesses.
-4. Add fixtures and tests for a genuinely new dependency, an unnecessary
-   duplicate, and a package whose usage cannot be resolved.
-5. Only then move to schema changes, module overlap, and Git scope checks.
+1. Search the repository manifest and source tree for possible overlapping
+   packages or utilities, with evidence links rather than guesses.
+2. Preserve line-level evidence in `.tibo/decisions.md`.
+3. Install and dogfood the Codex skill on Tibo's own changes.
+4. Validate the same portable skill instructions in Claude Code.
+5. Only then move to schema safety, module overlap, and Git scope checks.
 
 ### Pending / deliberately later
 
 - Codex handoff summaries and unresolved-question output.
 - GitHub Action and pull-request reports.
 - Optional model-assisted explanations with a strict evidence boundary.
-- Adapters for other coding agents.
 - Hosted storage, mandatory API keys, autonomous edits, and token-savings
   claims without measurements.
 

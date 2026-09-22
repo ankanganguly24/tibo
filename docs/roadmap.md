@@ -58,21 +58,23 @@ remembered in `.tibo/`.
 - [x] Read tracked and untracked working-tree changes locally.
 - [x] Detect newly added dependencies and environment-variable references.
 - [x] Render interactive terminal decisions and machine-readable JSON.
+- [x] Record decisions non-interactively with `tibo decide` for agent skills.
 - [x] Persist confirmed decisions in `.tibo/decisions.json` and
   `.tibo/decisions.md`.
 - [x] Build and test the CLI with no account, API key, or model call.
 
 ### Next slice: dependency evidence
 
-- [ ] Show package name, requested version, and the exact manifest diff lines.
-- [ ] Find every import or usage location introduced by the change, including
+- [x] Show package name, requested version, and the exact manifest diff lines.
+- [x] Find every import or usage location introduced by the change, including
   file path and line number where available.
 - [ ] Search the repository for an existing dependency or internal utility that
   appears to solve the same job.
 - [ ] Explain why the finding was raised using only the evidence Tibo found;
   never claim that two packages are equivalent without showing the match.
-- [ ] Include the evidence in terminal output, `scan --json`, and the ledger
-  entry so a later session can review the same decision.
+- [x] Include the evidence in terminal output and `scan --json`.
+- [ ] Preserve line-level evidence in the rendered ledger entry so a later
+  session can review the same decision.
 
 ### Exit criteria
 

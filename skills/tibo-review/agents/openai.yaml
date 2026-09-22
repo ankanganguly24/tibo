@@ -1,0 +1,7 @@
+interface:
+  display_name: "Tibo review"
+  short_description: "Review agent decisions with local evidence"
+  brand_color: "#1F2937"
+  default_prompt: "Use $tibo-review to review the structural decisions in the agent's latest repository changes."
+policy:
+  allow_implicit_invocation: true
