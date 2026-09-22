@@ -34,20 +34,29 @@ remediation workflow are working. `tibo summary` now gives a fresh agent the
 confirmed, rejected, deferred, and unresolved state. The next work is richer
 schema safety and public/module boundary detection.
 
-### Next
+### Next selected workstream
 
-1. Validate the portable skill instructions in Codex and Claude Code installs.
-2. Add rollback and compatibility evidence for schema changes.
-3. Extend interface detection to routes, CLI commands, event names, and
-   serialized fields.
+The following four areas are now selected for implementation after the real
+movie-app dogfood pass:
+
+1. **More detectors:** routes, CLI commands, event names, serialized fields,
+   stronger import-graph module evidence, and rollback compatibility checks.
+2. **Real agent validation:** install and exercise the portable skill in actual
+   Codex and Claude environments, recording any host-specific differences.
+3. **Team review surfaces:** add a base-commit mode first, then a GitHub Action
+   and pull-request reports that reuse the same JSON findings contract.
+4. **Optional model assistance:** define an evidence-only explanation provider;
+   no model may create findings, approve decisions, or receive unrestricted
+   repository contents.
+
+The movie-app dogfood repository is the validation gate for these changes.
 
 ### Pending / deliberately later
 
-- Codex handoff summaries and unresolved-question output.
-- GitHub Action and pull-request reports.
-- Optional model-assisted explanations with a strict evidence boundary.
-- Hosted storage, mandatory API keys, autonomous edits, and token-savings
-  claims without measurements.
+- Hosted storage or a Tibo account.
+- Mandatory API keys.
+- Autonomous edits without explicit approval.
+- Token-savings or productivity claims without measurements.
 
 ## Decision log
 

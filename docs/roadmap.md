@@ -195,6 +195,12 @@ A small repository can run Tibo in CI, review a linked report, approve or
 reject a finding locally, and keep the baseline and ledger behavior
 deterministic across machines.
 
+## Selected after dogfood
+
+The next implementation work is the four-part workstream recorded in the
+[timeline](timeline.md): richer detectors, real Codex/Claude validation, team
+review surfaces, and an opt-in evidence-only model explanation provider.
+
 ## Explicitly deferred
 
 - Hosted repository storage or a Tibo account

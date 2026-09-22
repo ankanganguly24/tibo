@@ -19,6 +19,9 @@
   nearby rollback-file evidence for schema changes.
 - Marked synthetic untracked-file diffs as new files so module analysis works
   before a file is staged.
+- Recorded the selected post-dogfood workstream: richer detectors, real
+  Codex/Claude validation, team review surfaces, and an opt-in evidence-only
+  model explanation provider.
 - Expanded the roadmap with concrete user outcomes, implementation slices,
   evidence requirements, and phase exit criteria.
 - Added a living project timeline and recorded dependency evidence as the next
