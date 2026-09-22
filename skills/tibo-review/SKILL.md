@@ -14,7 +14,7 @@ or infer conclusions that are not present in its findings.
 At the start of a fresh agent session, run:
 
 ```bash
-tibo summary --json
+npx @goankan/tibo summary --json
 ```
 
 Use it to understand kept, rejected, deferred, and unresolved decisions. Do
@@ -26,7 +26,7 @@ revisit it.
 From the repository being changed, run the available Tibo command:
 
 ```bash
-tibo scan --json
+npx @goankan/tibo scan --json
 ```
 
 If the `tibo` binary is not installed, use the repository's local build:
@@ -46,7 +46,8 @@ For each finding, show:
 1. The exact summary and finding ID.
 2. Every evidence path and line returned by Tibo.
 3. The confidence.
-4. The limitation, verbatim or faithfully shortened.
+4. The severity.
+5. The limitation, verbatim or faithfully shortened.
 
 Group related evidence under one finding. Never call a dependency unsafe,
 unnecessary, or equivalent to an existing package unless Tibo's evidence proves
@@ -61,9 +62,9 @@ found no supported structural decisions.
 After the user chooses, record each decision with its stable ID:
 
 ```bash
-tibo decide <finding-id> keep
-tibo decide <finding-id> reject
-tibo decide <finding-id> later
+npx @goankan/tibo decide <finding-id> keep
+npx @goankan/tibo decide <finding-id> reject
+npx @goankan/tibo decide <finding-id> later
 ```
 
 If using a local build, replace `tibo` with the same `node .../dist/index.js`
@@ -80,8 +81,8 @@ context when the JSON finding already answers the review question.
 ## Optional remediation
 
 A rejection records intent; it does not edit files. Only offer remediation after
-the user explicitly rejects a finding and separately agrees to let the host
-agent change the repository.
+the user explicitly rejects a finding and separately approves a repair plan that
+lets the host agent change the repository.
 
 Before editing, state a bounded repair plan using the finding's evidence. For a
 rejected dependency, the plan may include removing the manifest entry, removing
@@ -93,7 +94,7 @@ After approval:
 
 1. Make the smallest code change that addresses the rejected finding.
 2. Run the relevant tests or build command.
-3. Run `tibo scan --json` again.
+3. Run `npx @goankan/tibo scan --json` again.
 4. Report whether the original finding disappeared, remains, or changed.
 5. Keep the original rejection in the ledger as the decision record.
 

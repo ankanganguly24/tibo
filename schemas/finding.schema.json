@@ -3,7 +3,7 @@
   "$id": "https://tiborun.vercel.app/schemas/finding.schema.json",
   "title": "Tibo finding",
   "type": "object",
-  "required": ["id", "kind", "summary", "evidence", "confidence", "limitation", "decision"],
+  "required": ["id", "kind", "summary", "evidence", "confidence", "severity", "limitation", "decision"],
   "properties": {
     "id": { "type": "string", "pattern": "^[a-f0-9]{12}$" },
     "kind": { "type": "string", "enum": ["dependency", "env", "schema", "interface", "module"] },

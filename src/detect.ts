@@ -1,15 +1,23 @@
 import { createHash } from "node:crypto";
+import { execFileSync } from "node:child_process";
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join, relative } from "node:path";
-import type { Evidence, Finding } from "./types.js";
+import type { Evidence, Finding, Severity } from "./types.js";
 
 type AddedLine = { path: string; line: number; text: string };
 
 const currentFile = (line: string) => line.match(/^\+\+\+ b\/(.+)$/)?.[1];
 const stableId = (kind: string, value: string) => createHash("sha1").update(`${kind}:${value}`).digest("hex").slice(0, 12);
 
-const ignoredDirectories = new Set([".git", "node_modules", "dist", ".next", "coverage"]);
+const ignoredDirectories = new Set([".git", ".tibo", "node_modules", "dist", ".next", "coverage"]);
 const capabilityStopWords = new Set(["js", "ts", "node", "core", "lib", "sdk", "api", "client", "plugin"]);
+const detectorPolicy = {
+  dependency: { confidence: "high" as const, severity: "medium" as Severity },
+  env: { confidence: "medium" as const, severity: "medium" as Severity },
+  schema: { confidence: "high" as const, severity: "medium" as Severity },
+  interface: { confidence: "medium" as const, severity: "medium" as Severity },
+  module: { confidence: "low" as const, severity: "low" as Severity },
+};
 
 function capabilityTokens(name: string): string[] {
   return [...new Set(name.toLowerCase().split(/[^a-z0-9]+/).filter((token) => token.length >= 3 && !capabilityStopWords.has(token)))];
@@ -47,21 +55,81 @@ function moduleTokens(path: string): string[] {
   return capabilityTokens(base).filter((token) => !["index", "test", "spec", "page", "route"].includes(token));
 }
 
+function importedModuleRefs(text: string): string[] {
+  const refs = new Set<string>();
+  for (const match of text.matchAll(/\bfrom\s*["']([^"']+)["']|\bimport\s*["']([^"']+)["']|\bimport\s*\(\s*["']([^"']+)["']\s*\)|\brequire\s*\(\s*["']([^"']+)["']\s*\)/g)) {
+    const ref = match[1] ?? match[2] ?? match[3] ?? match[4];
+    if (ref) refs.add(ref);
+  }
+  return [...refs];
+}
+
+function importedSymbols(text: string): string[] {
+  const names = new Set<string>();
+  for (const match of text.matchAll(/\bimport\s*\{([^}]+)\}/g)) {
+    for (const name of match[1].split(",")) {
+      const normalized = name.trim().split(/\s+as\s+/i)[0]?.trim();
+      if (normalized && /^[A-Za-z_$][A-Za-z0-9_$]*$/.test(normalized)) names.add(normalized);
+    }
+  }
+  for (const match of text.matchAll(/\b(?:new|extends|implements)\s+([A-Za-z_$][A-Za-z0-9_$]*)/g)) names.add(match[1]);
+  return [...names];
+}
+
+function resolveModuleReference(fromPath: string, reference: string, candidates: Set<string>): string | undefined {
+  if (!reference.startsWith(".")) return undefined;
+  const directory = fromPath.includes("/") ? fromPath.slice(0, fromPath.lastIndexOf("/")) : ".";
+  const base = join(directory, reference).replace(/\\/g, "/");
+  const options = [base, `${base}.ts`, `${base}.tsx`, `${base}.js`, `${base}.jsx`, `${base}.mjs`, `${base}/index.ts`, `${base}/index.tsx`, `${base}/index.js`];
+  return options.find((option) => candidates.has(option));
+}
+
 function moduleOverlapEvidence(path: string, cwd: string, changedPaths: Set<string>, addedText: string): Evidence[] {
   const tokens = moduleTokens(path);
   if (!tokens.length) return [];
+  const newExports = exportNames(addedText);
+  const newImports = importedModuleRefs(addedText);
+  const newImportedSymbols = importedSymbols(addedText);
   const evidence: Evidence[] = [];
-  for (const absolute of repositoryFiles(cwd)) {
+  const files = repositoryFiles(cwd);
+  const candidates = new Set(files.map((absolute) => relative(cwd, absolute) || absolute));
+  for (const absolute of files) {
     const candidate = relative(cwd, absolute) || absolute;
     if (changedPaths.has(candidate) || candidate === path) continue;
     const overlap = moduleTokens(candidate).filter((token) => tokens.includes(token));
     let candidateContent = "";
     try { candidateContent = readFileSync(absolute, "utf8"); } catch { continue; }
-    const sharedSymbols = exportNames(addedText).filter((name) => new RegExp(`\b${name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\b`).test(candidateContent));
-    if (overlap.length || sharedSymbols.length) evidence.push({ path: candidate, detail: sharedSymbols.length ? `Possible overlapping module; shares exported symbol: ${sharedSymbols[0]}` : `Possible overlapping module; matched token: ${overlap[0]}` });
+    const candidateExports = exportNames(candidateContent);
+    const sharedSymbols = [...new Set([...newExports, ...newImportedSymbols])].filter((name) => candidateExports.includes(name));
+    const directImport = newImports.map((reference) => resolveModuleReference(path, reference, candidates)).find((resolved) => resolved === candidate);
+    if (directImport) evidence.push({ path: candidate, detail: "Possible overlapping module; new file imports this existing module" });
+    else if (sharedSymbols.length) evidence.push({ path: candidate, detail: `Possible overlapping module; shares exported symbol: ${sharedSymbols[0]}` });
+    else if (overlap.length) evidence.push({ path: candidate, detail: `Possible overlapping module; matched filename token: ${overlap[0]}` });
     if (evidence.length >= 5) break;
   }
   return evidence;
+}
+
+function schemaSignal(path: string, text: string): { detail: string; destructive: boolean } | undefined {
+  if (path === ".tibo" || path.startsWith(".tibo/")) return undefined;
+  const destructive = /\bDROP\s+(TABLE|INDEX|COLUMN|TYPE|CONSTRAINT)\b/i.test(text)
+    || /\bALTER\s+TABLE\b.*\bDROP\b/i.test(text)
+    || /\bALTER\s+TABLE\b.*\bALTER\s+COLUMN\b/i.test(text)
+    || /\b(?:remove|drop)(?:Index|Constraint|Column|Table)\b/i.test(text);
+  const sql = /\b(CREATE|ALTER|DROP)\s+(TABLE|INDEX|UNIQUE\s+INDEX|TYPE|CONSTRAINT)\b/i.test(text)
+    || /\b(?:ADD|DROP)\s+CONSTRAINT\b/i.test(text)
+    || /\bINSERT\s+INTO\b/i.test(text);
+  const schemaPath = /(?:^|\/)(?:schema|schemas|models|entities|migrations?)(?:\/|\.|$)/i.test(path) || /\.(?:prisma|drizzle|schema)$/i.test(path);
+  const orm = /\b(?:model|enum)\s+[A-Za-z_$][A-Za-z0-9_$]*\b/.test(text)
+    || /@@(?:index|unique|id|map)\b|@(?:id|unique|index|relation)\b|\b(?:references|hasMany|belongsTo|createTable|addConstraint|createIndex)\b/i.test(text)
+    || (schemaPath && /\b(?:CREATE|ALTER|DROP)\s+(?:TABLE|INDEX|TYPE|CONSTRAINT)\b/i.test(text));
+  const seed = /(?:^|\/)(?:seeds?|fixtures?)(?:\/|$)|(?:^|\/)(?:seed|fixtures?)\.(?:[cm]?[jt]sx?)$/i.test(path)
+    || /\b(?:INSERT\s+INTO|createMany|\.create\s*\(|\.insert\s*\(|seed\s*\()/i.test(text);
+  if (!sql && !orm && !seed) return undefined;
+  return {
+    detail: destructive ? text.trim() || "Potentially destructive schema operation" : seed ? `Seed or fixture data write: ${text.trim()}` : orm && !sql ? "ORM schema, model, index, or constraint change" : text.trim() || "Schema or persistence statement",
+    destructive,
+  };
 }
 
 function rollbackEvidence(path: string, cwd: string): Evidence[] {
@@ -199,25 +267,22 @@ export function detect(diff: string, cwd?: string): Finding[] {
     if (line.startsWith("-") && !line.startsWith("---") && file === "package.json") oldPackageText += `${line.slice(1)}\n`;
   }
   for (const added of lines) {
+    if (added.path === ".tibo" || added.path.startsWith(".tibo/")) continue;
     const envPattern = /\bprocess\.env\.([A-Z][A-Z0-9_]*)\b|\bprocess\.env\[['"]([A-Z][A-Z0-9_]*)['"]\]/g;
     for (const env of added.text.matchAll(envPattern)) {
       const name = env[1] ?? env[2];
-      findings.push({ id: stableId("env", `${added.path}:${name}`), kind: "env", summary: `new environment var   ${name}`, evidence: [{ path: added.path, line: added.line, detail: `Reads process.env.${name}` }], confidence: "medium", limitation: "A diff cannot prove whether deployment configuration already defines this variable." });
+      findings.push({ id: stableId("env", `${added.path}:${name}`), kind: "env", summary: `new environment var   ${name}`, evidence: [{ path: added.path, line: added.line, detail: `Reads process.env.${name}` }], ...detectorPolicy.env, limitation: "A diff cannot prove whether deployment configuration already defines this variable." });
     }
-    const destructiveSchema = /\bDROP\s+(TABLE|INDEX|COLUMN|TYPE|CONSTRAINT)\b/i.test(added.text)
-      || /\bALTER\s+TABLE\b.*\bDROP\b/i.test(added.text)
-      || /\bALTER\s+TABLE\b.*\bALTER\s+COLUMN\b/i.test(added.text);
-    const schemaStatement = /\b(CREATE|ALTER|DROP)\s+(TABLE|INDEX|COLUMN|TYPE|CONSTRAINT)\b/i.test(added.text);
-    const migrationFile = /(?:^|\/)migrations?\//i.test(added.path) || /\.(?:sql|prisma)$/i.test(added.path);
-    if (schemaStatement || migrationFile) {
+    const schema = schemaSignal(added.path, added.text);
+    if (schema) {
       findings.push({
         id: stableId("schema", `${added.path}:${added.line}:${added.text.trim()}`),
         kind: "schema",
-        summary: destructiveSchema ? "destructive schema or persistence change" : "schema or persistence change",
-        evidence: [{ path: added.path, line: added.line, detail: added.text.trim() }, ...(cwd ? rollbackEvidence(added.path, cwd) : [])],
-        confidence: "high",
-        severity: destructiveSchema ? "high" : "medium",
-        limitation: destructiveSchema
+        summary: schema.destructive ? "destructive schema or persistence change" : "schema or persistence change",
+        evidence: [{ path: added.path, line: added.line, detail: schema.detail }, ...(cwd ? rollbackEvidence(added.path, cwd) : [])],
+        ...detectorPolicy.schema,
+        severity: schema.destructive ? "high" : detectorPolicy.schema.severity,
+        limitation: schema.destructive
           ? "This identifies a potentially destructive operation but does not prove whether backups, compatibility, or rollback steps exist."
           : "This identifies persistence-related edits but does not assess migration safety or rollback behavior."
       });
@@ -231,16 +296,25 @@ export function detect(diff: string, cwd?: string): Finding[] {
         kind: "interface",
         summary: `${changed ? "changed" : "new"} exported symbol   ${name}`,
         evidence: [{ path: added.path, line: added.line, detail: `Exports ${name}` }],
-        confidence: "medium",
-        severity: "medium",
+        ...detectorPolicy.interface,
         limitation: changed
           ? "This identifies an exported symbol change but cannot prove whether consumers remain compatible."
           : "An export is a possible public interface change; this diff cannot prove whether another package or consumer imports it."
       });
     }
   }
-  const oldDeps = manifestDependencies(oldPackageText);
-  const newDeps = manifestDependencies(newPackageText);
+  let oldDeps = manifestDependencies(oldPackageText);
+  let newDeps = manifestDependencies(newPackageText);
+  if (cwd) {
+    try {
+      const currentManifest = readFileSync(join(cwd, "package.json"), "utf8");
+      const previousManifest = execFileSync("git", ["show", "HEAD:package.json"], { cwd, encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] });
+      oldDeps = manifestDependencies(previousManifest);
+      newDeps = manifestDependencies(currentManifest);
+    } catch {
+      // Synthetic diffs and repositories without a committed manifest use the parsed diff above.
+    }
+  }
   const changedPaths = new Set(lines.map((line) => line.path));
   const addedFiles = newFilePaths(diff);
   // Context lines in a unified diff carry a leading space, so a reformatted
@@ -270,7 +344,7 @@ export function detect(diff: string, cwd?: string): Finding[] {
         kind: "module",
         summary: `possible overlapping module   ${path}`,
         evidence: [{ path, detail: "New file in the working diff" }, ...overlap],
-        confidence: "low",
+        ...detectorPolicy.module,
         limitation: "Filename overlap is a review prompt, not proof that the modules have the same responsibility."
       });
     }
@@ -289,7 +363,7 @@ export function detect(diff: string, cwd?: string): Finding[] {
       : usage.length
         ? "Presence in a manifest does not show whether the dependency is necessary or safe."
         : "No import or require for this package appears in the added lines; the diff may be incomplete or usage may be indirect.";
-    findings.push({ id: stableId("dependency", name), kind: "dependency", summary: `dependency added  ${name} ${version}`, evidence, confidence: "high", limitation });
+    findings.push({ id: stableId("dependency", name), kind: "dependency", summary: `dependency added  ${name} ${version}`, evidence, ...detectorPolicy.dependency, limitation });
   }
   return dedupe(findings);
 }

@@ -42,15 +42,31 @@ Current detectors are narrow and explainable:
 - **Dependency:** newly added manifest entries, requested versions, added
   import or load sites, and possible repository matches.
 - **Environment:** new `process.env` reads using dot or bracket notation.
-- **Schema:** SQL and migration-path changes, with a high-severity marker for
-  potentially destructive operations.
+- **Schema:** SQL and migration-path changes, ORM model/index/constraint
+  declarations, and seed or fixture writes, with a high-severity marker for
+  potentially destructive operations and nearby rollback evidence when it exists.
 - **Interface:** new or changed exported TypeScript and JavaScript symbols.
-- **Module:** low-confidence filename overlap for newly added files, with
-  existing-file evidence.
+- **Module:** low-confidence overlap for newly added files using filename
+  tokens, direct relative imports, shared exports, and referenced symbols.
 
-Public interfaces, module overlap, richer schema safety, and requested-scope
-analysis are planned. Each detector returns evidence, confidence, and a
-limitation instead of a natural-language verdict.
+Routes, CLI commands, event names, serialized fields, and requested-scope
+analysis remain planned. Each detector returns evidence, confidence, severity,
+and a limitation instead of a natural-language verdict.
+
+### Detector policy
+
+The policy is explicit and lives in the detector code. It is not a model score:
+
+| Detector | Confidence | Default severity | Why |
+| --- | --- | --- | --- |
+| Dependency | high | medium | The manifest addition is directly observable; necessity is unknown. |
+| Environment | medium | medium | The new read is observable; deployment configuration is outside the diff. |
+| Schema | high | medium | The persistence edit is observable; destructive operations become high severity. |
+| Interface | medium | medium | The export change is observable; consumer compatibility is unknown. |
+| Module | low | low | Filename, import, and symbol overlap are review prompts, not proof. |
+
+Every JSON finding includes both `confidence` and `severity`. A future policy
+change must update the table, the schema, and detector tests together.
 
 ## Findings
 
@@ -83,6 +99,13 @@ lets agent skills record a decision without taking ownership away from the
 engineer. A later scan recognizes the stable finding ID and does not ask the
 same question again; deferred findings remain in the ledger for a future
 summary.
+
+Ledger entries are safe to maintain by hand when needed: edit the matching
+entry in `.tibo/decisions.json`, then regenerate the Markdown view by recording
+the next decision. To intentionally revisit a decision, remove that entry from
+the JSON ledger and run a fresh scan; do not change source code to reset review
+state. The stable format is an array of finding-shaped entries with a required
+decision and ISO timestamp.
 
 ## Agent skill boundary
 

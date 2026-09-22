@@ -102,8 +102,9 @@ Tibo starts with TypeScript and JavaScript repositories. The first release is a 
 ## Status
 
 Pre-1.0 and honest about it. The local scanner, evidence-rich findings,
-decision ledger, and portable agent-review skill are in place. The next major
-capability is `tibo summary` for fresh agent sessions. See the
+decision ledger, portable agent-review skill, published npm package, and
+fresh-agent handoff are in place. The next major capabilities are richer route
+and scope detectors plus team review surfaces. See the
 [roadmap](docs/roadmap.md).
 
 ## Documentation

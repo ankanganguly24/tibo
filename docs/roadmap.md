@@ -94,11 +94,11 @@ can verify.
 
 ### Schema and persistence changes
 
-- [ ] Detect additions and changes to SQL migrations, ORM schemas, indexes,
+- [x] Detect additions and changes to SQL migrations, ORM schemas, indexes,
   constraints, and seed data.
 - [x] Classify destructive operations such as `DROP`, narrowing a column, or
   removing a constraint separately from additive changes.
-- [ ] Point to the migration/schema file and the changed statement; include
+- [x] Point to the migration/schema file and the changed statement; include
   rollback or compatibility evidence only when it exists in the repository.
 
 ### Public behavior and module boundaries
@@ -107,7 +107,7 @@ can verify.
 - [x] Detect changed exported symbols.
 - [ ] Detect routes, CLI commands, event names, and serialized fields.
 - [x] Detect possible overlap for a new module using bounded filename evidence.
-- [ ] Strengthen module overlap with imports, exports, and referenced symbols.
+- [x] Strengthen module overlap with imports, exports, and referenced symbols.
 - [x] Report possible existing files beside a newly added module so the user
   can decide whether the split is intentional.
 
@@ -116,16 +116,18 @@ can verify.
 - [ ] Compare the changed files with the requested Git scope where a base or
   branch is available.
 - [ ] Flag unrelated architectural changes separately from required edits.
-- [ ] Add severity and confidence fields with documented rules, not a hidden
+- [x] Add severity and confidence fields with documented rules, not a hidden
   model score.
 
 ### Exit criteria
 
 Fixtures cover additive and destructive schema changes, public API changes,
 intentional module splits, accidental duplicates, and unrelated file edits.
-Each fixture has an expected finding set and evidence assertions. False
-positive examples are kept beside the detector tests and count against the
-phase if they regress.
+Each fixture has an expected finding set and evidence assertions. The suite now
+covers additive and destructive persistence changes, ORM indexes and seed
+writes, public API changes, direct-import and symbol overlap, and unrelated
+documentation changes. False-positive examples are kept beside the detector
+tests and count against the phase if they regress.
 
 ## Phase 3 — Make the next agent session remember the work
 
@@ -137,17 +139,17 @@ the engineer repeating the whole history or sending the repository elsewhere.
 
 ### Repository contract
 
-- [ ] Make Tibo's `AGENTS.md` a real reference implementation with commands,
+- [x] Make Tibo's `AGENTS.md` a real reference implementation with commands,
   evidence rules, and examples of accepted and rejected decisions.
-- [ ] Define the stable format of `.tibo/decisions.md` and unresolved
+- [x] Define the stable format of `.tibo/decisions.md` and unresolved
   questions so other agents can read it without a Tibo-specific SDK.
-- [ ] Document how to review, edit, and intentionally reset a ledger entry.
+- [x] Document how to review, edit, and intentionally reset a ledger entry.
 
 ### Handoff loop
 
 - [x] Add a concise `tibo summary` for the next session: confirmed decisions,
   unresolved findings, and evidence links.
-- [ ] Let Codex consume the summary through files already in the repository;
+- [x] Let Codex consume the summary through files already in the repository;
   no hosted memory or mandatory integration.
 - [ ] Keep interactive review and CI mode behavior identical at the finding
   and ledger level.
@@ -158,8 +160,8 @@ the engineer repeating the whole history or sending the repository elsewhere.
 
 After one session accepts a dependency and defers a schema change, a fresh
 session can run the summary command and understand both decisions with their
-evidence. Re-running the scan does not re-ask accepted decisions or silently
-erase deferred work.
+evidence. This is covered by the movie-app dogfood test. Re-running the scan
+does not re-ask accepted decisions or silently erase deferred work.
 
 ## Phase 4 — Put the evidence where teams already review code
 

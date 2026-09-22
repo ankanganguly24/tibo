@@ -241,3 +241,89 @@ test("distinguishes a changed exported symbol from a new one", () => {
   assert.equal(finding?.summary, "changed exported symbol   createSession");
   assert.match(finding?.limitation ?? "", /consumers remain compatible/);
 });
+
+test("uses direct imports and shared exports as module overlap evidence", () => {
+  const root = mkdtempSync(join(tmpdir(), "tibo-module-graph-"));
+  mkdirSync(join(root, "src"));
+  writeFileSync(join(root, "src", "order-service.ts"), "export function createOrder() { return true; }\n");
+  writeFileSync(join(root, "src", "order-types.ts"), "export type Order = { id: string };\n");
+  const diff = [
+    "diff --git a/src/order-service-v2.ts b/src/order-service-v2.ts",
+    "new file mode 100644",
+    "--- /dev/null",
+    "+++ b/src/order-service-v2.ts",
+    "@@ -0,0 +1,3 @@",
+    "+import { createOrder } from './order-service';",
+    "+export { createOrder };",
+    "+export function placeOrder() { return createOrder(); }",
+  ].join("\n");
+  try {
+    const finding = detect(diff, root).find((item) => item.kind === "module");
+    assert.ok(finding);
+    assert.ok(finding.evidence.some((item) => item.detail.includes("imports this existing module")));
+    assert.equal(finding.severity, "low");
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("detects ORM indexes, constraints, and seed writes", () => {
+  const diff = [
+    "+++ b/prisma/schema.prisma",
+    "@@ -1,0 +1,5 @@",
+    "+model Order {",
+    "+  id String @id",
+    "+  userId String",
+    "+  @@index([userId])",
+    "+}",
+    "+++ b/db/seeds/orders.ts",
+    "@@ -1,0 +1,1 @@",
+    "+await prisma.order.createMany({ data: orders });",
+  ].join("\n");
+  const findings = detect(diff).filter((item) => item.kind === "schema");
+  assert.equal(findings.length, 4);
+  assert.ok(findings.some((item) => item.evidence[0]?.detail.includes("ORM schema")));
+  assert.ok(findings.some((item) => item.evidence[0]?.detail.includes("Seed or fixture")));
+  assert.ok(findings.every((item) => item.severity === "medium" && item.confidence === "high"));
+});
+
+test("detects SQL constraints and seed inserts", () => {
+  const diff = [
+    "+++ b/db/migrations/007_constraints.sql",
+    "@@ -1,0 +1,2 @@",
+    "+ALTER TABLE orders ADD CONSTRAINT orders_user_fk FOREIGN KEY (user_id) REFERENCES users(id);",
+    "+INSERT INTO orders (id, user_id) VALUES ('1', 'u1');",
+  ].join("\n");
+  const findings = detect(diff).filter((item) => item.kind === "schema");
+  assert.equal(findings.length, 2);
+  assert.ok(findings[0]?.evidence[0]?.detail.includes("ADD CONSTRAINT"));
+  assert.ok(findings[1]?.evidence[0]?.detail.includes("INSERT INTO"));
+});
+
+test("assigns a documented severity and confidence policy to every detector", () => {
+  const diff = [
+    "+++ b/src/config.ts",
+    "+export const url = process.env.PUBLIC_URL;",
+    "+++ b/src/session.ts",
+    "+export function createSession() { return true; }",
+    "+++ b/db/migrations/006.sql",
+    "+CREATE INDEX session_user_idx ON sessions (user_id);",
+  ].join("\n");
+  const findings = detect(diff);
+  assert.ok(findings.length >= 3);
+  assert.ok(findings.every((item) => ["low", "medium", "high"].includes(item.severity)));
+  assert.ok(findings.every((item) => ["low", "medium", "high"].includes(item.confidence)));
+});
+
+test("does not create structural findings for unrelated documentation changes", () => {
+  const diff = [
+    "+++ b/README.md",
+    "@@ -1,0 +1,2 @@",
+    "+# Movie app",
+    "+This explains how to buy a ticket.",
+    "+++ b/styles.css",
+    "@@ -1,0 +1,1 @@",
+    "+.button { color: white; }",
+  ].join("\n");
+  assert.deepEqual(detect(diff), []);
+});

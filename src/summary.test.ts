@@ -9,6 +9,7 @@ const finding = (id: string, decision?: Finding["decision"]): Finding => ({
   summary: `finding ${id}`,
   evidence: [{ path: "src/config.ts", line: 2, detail: "reads an environment variable" }],
   confidence: "medium",
+  severity: "medium",
   limitation: "deployment configuration is unknown",
   decision,
 });
