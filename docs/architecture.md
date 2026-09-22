@@ -42,7 +42,8 @@ Current detectors are narrow and explainable:
 - **Dependency:** newly added manifest entries, requested versions, added
   import or load sites, and possible repository matches.
 - **Environment:** new `process.env` reads using dot or bracket notation.
-- **Schema:** basic SQL and migration-path changes.
+- **Schema:** SQL and migration-path changes, with a high-severity marker for
+  potentially destructive operations.
 
 Public interfaces, module overlap, richer schema safety, and requested-scope
 analysis are planned. Each detector returns evidence, confidence, and a
@@ -59,6 +60,7 @@ type Finding = {
   summary: string;
   evidence: Array<{ path: string; line?: number; detail: string }>;
   confidence: 'high' | 'medium' | 'low';
+  severity?: 'low' | 'medium' | 'high';
   limitation: string;
   decision?: 'unreviewed' | 'keep' | 'reject' | 'later';
 };

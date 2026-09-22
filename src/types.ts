@@ -11,6 +11,7 @@ export type Finding = {
   evidence: Evidence[];
   confidence: Confidence;
   limitation: string;
+  severity?: "low" | "medium" | "high";
   decision?: Decision;
 };
 

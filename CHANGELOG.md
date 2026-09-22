@@ -12,6 +12,8 @@
 - Added an optional skill remediation flow that requires explicit approval,
   runs tests, and rescans after the host agent edits rejected changes.
 - Added `tibo summary` and its JSON contract for fresh agent sessions.
+- Classified potentially destructive schema and migration statements with high
+  severity and explicit safety limitations.
 - Expanded the roadmap with concrete user outcomes, implementation slices,
   evidence requirements, and phase exit criteria.
 - Added a living project timeline and recorded dependency evidence as the next

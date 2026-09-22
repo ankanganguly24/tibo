@@ -143,8 +143,23 @@ export function detect(diff: string, cwd?: string): Finding[] {
       const name = env[1] ?? env[2];
       findings.push({ id: stableId("env", `${added.path}:${name}`), kind: "env", summary: `new environment var   ${name}`, evidence: [{ path: added.path, line: added.line, detail: `Reads process.env.${name}` }], confidence: "medium", limitation: "A diff cannot prove whether deployment configuration already defines this variable." });
     }
-    if (/\b(CREATE|ALTER|DROP)\s+(TABLE|INDEX|COLUMN|TYPE)\b/i.test(added.text) || /migrations?\//i.test(added.path)) {
-      findings.push({ id: stableId("schema", `${added.path}:${added.line}:${added.text.trim()}`), kind: "schema", summary: "schema or persistence change", evidence: [{ path: added.path, line: added.line, detail: added.text.trim() }], confidence: "high", limitation: "This identifies persistence-related edits but does not assess migration safety or rollback behavior." });
+    const destructiveSchema = /\bDROP\s+(TABLE|INDEX|COLUMN|TYPE|CONSTRAINT)\b/i.test(added.text)
+      || /\bALTER\s+TABLE\b.*\bDROP\b/i.test(added.text)
+      || /\bALTER\s+TABLE\b.*\bALTER\s+COLUMN\b/i.test(added.text);
+    const schemaStatement = /\b(CREATE|ALTER|DROP)\s+(TABLE|INDEX|COLUMN|TYPE|CONSTRAINT)\b/i.test(added.text);
+    const migrationFile = /(?:^|\/)migrations?\//i.test(added.path) || /\.(?:sql|prisma)$/i.test(added.path);
+    if (schemaStatement || migrationFile) {
+      findings.push({
+        id: stableId("schema", `${added.path}:${added.line}:${added.text.trim()}`),
+        kind: "schema",
+        summary: destructiveSchema ? "destructive schema or persistence change" : "schema or persistence change",
+        evidence: [{ path: added.path, line: added.line, detail: added.text.trim() }],
+        confidence: "high",
+        severity: destructiveSchema ? "high" : "medium",
+        limitation: destructiveSchema
+          ? "This identifies a potentially destructive operation but does not prove whether backups, compatibility, or rollback steps exist."
+          : "This identifies persistence-related edits but does not assess migration safety or rollback behavior."
+      });
     }
   }
   const oldDeps = manifestDependencies(oldPackageText);

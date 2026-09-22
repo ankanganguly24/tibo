@@ -154,3 +154,18 @@ test("detects multiple environment variables on one added line", () => {
     "new environment var   SUPABASE_KEY",
   ]);
 });
+
+
+test("classifies destructive migration statements separately", () => {
+  const diff = [
+    "+++ b/db/migrations/004_remove_legacy.sql",
+    "@@ -1,0 +1,2 @@",
+    "+ALTER TABLE orders DROP COLUMN legacy_status;",
+    "+CREATE INDEX orders_user_idx ON orders (user_id);",
+  ].join("\n");
+  const findings = detect(diff).filter((item) => item.kind === "schema");
+  assert.equal(findings[0]?.summary, "destructive schema or persistence change");
+  assert.equal(findings[0]?.severity, "high");
+  assert.equal(findings[1]?.summary, "schema or persistence change");
+  assert.equal(findings[1]?.severity, "medium");
+});

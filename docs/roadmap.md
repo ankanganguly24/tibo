@@ -96,7 +96,7 @@ can verify.
 
 - [ ] Detect additions and changes to SQL migrations, ORM schemas, indexes,
   constraints, and seed data.
-- [ ] Classify destructive operations such as `DROP`, narrowing a column, or
+- [x] Classify destructive operations such as `DROP`, narrowing a column, or
   removing a constraint separately from additive changes.
 - [ ] Point to the migration/schema file and the changed statement; include
   rollback or compatibility evidence only when it exists in the repository.

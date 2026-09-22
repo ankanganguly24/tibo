@@ -11,8 +11,8 @@ entry at the top.
 - Product narrowed to a local-first decision ledger for coding-agent changes.
 - TypeScript CLI scaffolded with `scan` and `scan --json` commands.
 - Working-tree and untracked-file diffs are collected locally.
-- Dependency additions, environment-variable references, and basic schema
-  changes are detected.
+- Dependency additions, environment-variable references, and schema changes
+  are detected, with destructive statements marked high severity.
 - Dependency findings include manifest, added usage, and possible repository
   matches with line numbers where available.
 - Findings have stable IDs and support keep, reject, later, and why decisions.
@@ -36,7 +36,7 @@ schema safety and public/module boundary detection.
 ### Next
 
 1. Validate the portable skill instructions in Codex and Claude Code installs.
-2. Add richer schema safety and destructive migration evidence.
+2. Add rollback and compatibility evidence for schema changes.
 3. Add public-interface and module-overlap findings.
 
 ### Pending / deliberately later

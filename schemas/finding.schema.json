@@ -23,6 +23,7 @@
     },
     "confidence": { "type": "string", "enum": ["high", "medium", "low"] },
     "limitation": { "type": "string" },
+    "severity": { "type": "string", "enum": ["low", "medium", "high"] },
     "decision": { "type": "string", "enum": ["unreviewed", "keep", "reject", "later"] }
   },
   "additionalProperties": false
