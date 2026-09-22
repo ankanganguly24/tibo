@@ -29,3 +29,21 @@ A rejected finding is only a recorded decision. If the engineer separately
 approves a repair, the host agent can use the finding evidence to make a narrow
 edit, run tests, and run Tibo again. The original rejection remains in the
 ledger; Tibo itself never edits source files.
+
+## npm package
+
+The package metadata is prepared for `tibo@0.1.0`. After the maintainer logs in
+to npm, publish it with:
+
+```bash
+npm publish --access public
+```
+
+Then users can run:
+
+```bash
+npx tibo scan
+```
+
+Until the first npm release, use `npm run build` followed by
+`node dist/index.js scan` from a checkout.

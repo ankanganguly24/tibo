@@ -1,0 +1,8 @@
+dist/**/*.test.js
+src/
+tests/
+website/
+docs/
+skills/
+.github/
+*.tgz

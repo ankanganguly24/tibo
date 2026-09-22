@@ -1,12 +1,48 @@
 {
   "name": "tibo",
   "version": "0.1.0",
-  "description": "A local-first decision ledger for coding agents.",
+  "description": "Local-first evidence review for coding-agent changes.",
   "type": "module",
-  "bin": { "tibo": "dist/index.js" },
-  "scripts": { "build": "tsc -p tsconfig.json", "dev": "tsx src/index.ts", "test": "npm run build && node --test dist/**/*.test.js" },
-  "keywords": ["codex", "ai-coding", "cli", "developer-tools", "local-first"],
+  "bin": {
+    "tibo": "dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "dev": "tsx src/index.ts",
+    "test": "npm run build && node --test dist/**/*.test.js",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "codex",
+    "ai-coding",
+    "cli",
+    "developer-tools",
+    "local-first"
+  ],
   "license": "MIT",
-  "engines": { "node": ">=20" },
-  "devDependencies": { "@types/node": "22.5.4", "tsx": "4.19.1", "typescript": "5.5.4" }
+  "engines": {
+    "node": ">=20"
+  },
+  "devDependencies": {
+    "@types/node": "22.5.4",
+    "tsx": "4.19.1",
+    "typescript": "5.5.4"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ankanganguly24/tibo.git"
+  },
+  "homepage": "https://tiborun.vercel.app",
+  "bugs": {
+    "url": "https://github.com/ankanganguly24/tibo/issues"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "schemas/finding.schema.json"
+  ],
+  "publishConfig": {
+    "access": "public"
+  }
 }
