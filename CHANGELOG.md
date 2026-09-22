@@ -17,6 +17,8 @@
 - Added findings for newly exported TypeScript and JavaScript symbols.
 - Added low-confidence possible-overlap findings for newly added modules and
   nearby rollback-file evidence for schema changes.
+- Marked synthetic untracked-file diffs as new files so module analysis works
+  before a file is staged.
 - Expanded the roadmap with concrete user outcomes, implementation slices,
   evidence requirements, and phase exit criteria.
 - Added a living project timeline and recorded dependency evidence as the next

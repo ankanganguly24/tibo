@@ -20,7 +20,7 @@ export function workingDiff(cwd = process.cwd()): string {
         } catch {
           try {
             const content = readFileSync(`${cwd}/${path}`, "utf8").slice(0, 200_000);
-            return `diff --git a/${path} b/${path}\n+++ b/${path}\n${content.split("\n").map((line) => `+${line}`).join("\n")}`;
+            return `diff --git a/${path} b/${path}\n--- /dev/null\n+++ b/${path}\n${content.split("\n").map((line) => `+${line}`).join("\n")}`;
           } catch { return ""; }
         }
       }).join("\n");
