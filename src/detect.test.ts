@@ -141,3 +141,16 @@ test("reports possible existing package and utility matches as evidence", () => 
     rmSync(root, { recursive: true, force: true });
   }
 });
+
+
+test("detects multiple environment variables on one added line", () => {
+  const diff = [
+    "+++ b/src/auth.ts",
+    "+export const client = [process.env.SUPABASE_URL, process.env.SUPABASE_KEY];",
+  ].join("\n");
+  const findings = detect(diff).filter((item) => item.kind === "env");
+  assert.deepEqual(findings.map((item) => item.summary), [
+    "new environment var   SUPABASE_URL",
+    "new environment var   SUPABASE_KEY",
+  ]);
+});

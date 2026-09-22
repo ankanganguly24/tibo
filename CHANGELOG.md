@@ -9,6 +9,8 @@
   signals, untracked files, and rendered ledger entries.
 - Added bounded lexical repository matches for possible existing dependencies or
   internal utilities, with an explicit non-equivalence limitation.
+- Added an optional skill remediation flow that requires explicit approval,
+  runs tests, and rescans after the host agent edits rejected changes.
 - Expanded the roadmap with concrete user outcomes, implementation slices,
   evidence requirements, and phase exit criteria.
 - Added a living project timeline and recorded dependency evidence as the next

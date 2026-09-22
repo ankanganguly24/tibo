@@ -133,6 +133,10 @@ local CLI, presents evidence from `scan --json`, and records explicit decisions
 with `tibo decide`. Install it from [`skills/tibo-review/`](skills/tibo-review/)
 and see the [integration guide](docs/integrations.md).
 
+The skill also supports optional remediation: after you reject a finding and
+approve a repair plan, the host agent makes the smallest change, runs tests, and
+runs Tibo again. Tibo never edits files by itself.
+
 ## Development direction
 
 The first implementation should prove one narrow loop:

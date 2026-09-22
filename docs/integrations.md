@@ -22,3 +22,10 @@ The CLI decides what evidence exists. The host model may summarize that evidence
 using the task context, but it must not invent repository matches, approve a
 finding, or replace the evidence contract. No repository contents leave the
 machine through Tibo.
+
+## Optional remediation
+
+A rejected finding is only a recorded decision. If the engineer separately
+approves a repair, the host agent can use the finding evidence to make a narrow
+edit, run tests, and run Tibo again. The original rejection remains in the
+ledger; Tibo itself never edits source files.

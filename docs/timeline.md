@@ -18,6 +18,7 @@ entry at the top.
 - Findings have stable IDs and support keep, reject, later, and why decisions.
 - `tibo decide` records decisions for non-interactive agent skills.
 - A portable `tibo-review` skill is included for Codex and Claude Code.
+- The skill supports explicit-approval remediation followed by tests and a rescan.
 - Confirmed decisions persist in `.tibo/decisions.json` and
   `.tibo/decisions.md`.
 - Root tests pass and the CLI builds successfully.
@@ -27,8 +28,10 @@ entry at the top.
 ### In progress
 
 **Fresh-session continuity.** The scan, decision command, ledger, and portable
-skill workflow are working. The next useful surface is a compact summary that
-lets a new agent understand confirmed, rejected, deferred, and unresolved work.
+skill workflow are working. Remediation is now an opt-in host-agent step that
+is verified by tests and a rescan. The next useful surface is a compact summary
+that lets a new agent understand confirmed, rejected, deferred, and unresolved
+work.
 
 ### Next
 

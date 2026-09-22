@@ -11,6 +11,8 @@ Git repository
   -> terminal / JSON output
   -> human decision
   -> .tibo ledger
+  -> optional host-agent remediation
+  -> rescan and test
 
 Codex or Claude skill
   -> runs scan --json
@@ -76,7 +78,8 @@ summary.
 The portable `skills/tibo-review/SKILL.md` is the workflow adapter for Codex and
 Claude Code. It runs the local CLI, presents the JSON findings, asks the human
 for a decision, and records it. It does not duplicate detectors or send source
-code to a hosted model.
+code to a hosted model. If the user approves remediation, the host agent makes
+the edit and Tibo verifies the next diff; the core never edits source files.
 
 ## Model boundary
 

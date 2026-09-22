@@ -63,3 +63,26 @@ Keep the model explanation short. The host agent may explain why a finding could
 matter using the user's task context, but it must separate that explanation from
 Tibo's evidence. Do not paste the entire repository or raw diff into the model
 context when the JSON finding already answers the review question.
+
+## Optional remediation
+
+A rejection records intent; it does not edit files. Only offer remediation after
+the user explicitly rejects a finding and separately agrees to let the host
+agent change the repository.
+
+Before editing, state a bounded repair plan using the finding's evidence. For a
+rejected dependency, the plan may include removing the manifest entry, removing
+its imports, updating the lockfile through the package manager, and adjusting
+only directly affected code. Do not remove unrelated files or replace the
+package with an unrequested alternative.
+
+After approval:
+
+1. Make the smallest code change that addresses the rejected finding.
+2. Run the relevant tests or build command.
+3. Run `tibo scan --json` again.
+4. Report whether the original finding disappeared, remains, or changed.
+5. Keep the original rejection in the ledger as the decision record.
+
+If the repair needs a design choice, stop and ask instead of guessing. The host
+agent performs the edit; Tibo only supplies evidence and verifies the next diff.

@@ -138,8 +138,8 @@ export function detect(diff: string, cwd?: string): Finding[] {
     if (line.startsWith("-") && !line.startsWith("---") && file === "package.json") oldPackageText += `${line.slice(1)}\n`;
   }
   for (const added of lines) {
-    const env = added.text.match(/\bprocess\.env\.([A-Z][A-Z0-9_]*)\b|\bprocess\.env\[['"]([A-Z][A-Z0-9_]*)['"]\]/);
-    if (env) {
+    const envPattern = /\bprocess\.env\.([A-Z][A-Z0-9_]*)\b|\bprocess\.env\[['"]([A-Z][A-Z0-9_]*)['"]\]/g;
+    for (const env of added.text.matchAll(envPattern)) {
       const name = env[1] ?? env[2];
       findings.push({ id: stableId("env", `${added.path}:${name}`), kind: "env", summary: `new environment var   ${name}`, evidence: [{ path: added.path, line: added.line, detail: `Reads process.env.${name}` }], confidence: "medium", limitation: "A diff cannot prove whether deployment configuration already defines this variable." });
     }
