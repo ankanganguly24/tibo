@@ -104,8 +104,8 @@ can verify.
 ### Public behavior and module boundaries
 
 - [x] Detect newly exported functions, types, classes, constants, and interfaces.
-- [ ] Detect changed exported symbols, routes, CLI commands, event names, and
-  serialized fields.
+- [x] Detect changed exported symbols.
+- [ ] Detect routes, CLI commands, event names, and serialized fields.
 - [x] Detect possible overlap for a new module using bounded filename evidence.
 - [ ] Strengthen module overlap with imports, exports, and referenced symbols.
 - [x] Report possible existing files beside a newly added module so the user

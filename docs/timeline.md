@@ -38,8 +38,8 @@ schema safety and public/module boundary detection.
 
 1. Validate the portable skill instructions in Codex and Claude Code installs.
 2. Add rollback and compatibility evidence for schema changes.
-3. Strengthen changed-interface and module-overlap evidence with imports and
-   referenced symbols.
+3. Extend interface detection to routes, CLI commands, event names, and
+   serialized fields.
 
 ### Pending / deliberately later
 

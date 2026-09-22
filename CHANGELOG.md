@@ -14,7 +14,7 @@
 - Added `tibo summary` and its JSON contract for fresh agent sessions.
 - Classified potentially destructive schema and migration statements with high
   severity and explicit safety limitations.
-- Added findings for newly exported TypeScript and JavaScript symbols.
+- Added findings for new or changed exported TypeScript and JavaScript symbols.
 - Added low-confidence possible-overlap findings for newly added modules and
   nearby rollback-file evidence for schema changes.
 - Marked synthetic untracked-file diffs as new files so module analysis works

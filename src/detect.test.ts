@@ -227,3 +227,17 @@ test("includes a nearby rollback file as schema evidence", () => {
     rmSync(root, { recursive: true, force: true });
   }
 });
+
+
+test("distinguishes a changed exported symbol from a new one", () => {
+  const diff = [
+    "--- a/src/auth/session.ts",
+    "+++ b/src/auth/session.ts",
+    "@@ -1 +1 @@",
+    "-export function createSession(userId: string) { return { userId }; }",
+    "+export function createSession(userId: string, provider = 'supabase') { return { userId, provider }; }",
+  ].join("\n");
+  const finding = detect(diff).find((item) => item.kind === "interface");
+  assert.equal(finding?.summary, "changed exported symbol   createSession");
+  assert.match(finding?.limitation ?? "", /consumers remain compatible/);
+});

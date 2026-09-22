@@ -55,7 +55,7 @@ Tibo addresses the decision layer. It reads a Git diff, detects structural signa
 - Newly added dependencies, versions, added import locations, and possible repository matches
 - New environment variables and configuration reads
 - Basic schema and migration changes, including destructive-change warnings
-- Newly exported functions, classes, constants, types, and interfaces
+- New or changed exported functions, classes, constants, types, and interfaces
 - Possible overlap between newly added modules and existing files
 - Decisions you explicitly confirm, reject, or defer
 

@@ -44,7 +44,7 @@ Current detectors are narrow and explainable:
 - **Environment:** new `process.env` reads using dot or bracket notation.
 - **Schema:** SQL and migration-path changes, with a high-severity marker for
   potentially destructive operations.
-- **Interface:** newly exported TypeScript and JavaScript symbols.
+- **Interface:** new or changed exported TypeScript and JavaScript symbols.
 - **Module:** low-confidence filename overlap for newly added files, with
   existing-file evidence.
 

@@ -47,7 +47,7 @@ function moduleTokens(path: string): string[] {
   return capabilityTokens(base).filter((token) => !["index", "test", "spec", "page", "route"].includes(token));
 }
 
-function moduleOverlapEvidence(path: string, cwd: string, changedPaths: Set<string>): Evidence[] {
+function moduleOverlapEvidence(path: string, cwd: string, changedPaths: Set<string>, addedText: string): Evidence[] {
   const tokens = moduleTokens(path);
   if (!tokens.length) return [];
   const evidence: Evidence[] = [];
@@ -55,7 +55,10 @@ function moduleOverlapEvidence(path: string, cwd: string, changedPaths: Set<stri
     const candidate = relative(cwd, absolute) || absolute;
     if (changedPaths.has(candidate) || candidate === path) continue;
     const overlap = moduleTokens(candidate).filter((token) => tokens.includes(token));
-    if (overlap.length) evidence.push({ path: candidate, detail: `Possible overlapping module; matched token: ${overlap[0]}` });
+    let candidateContent = "";
+    try { candidateContent = readFileSync(absolute, "utf8"); } catch { continue; }
+    const sharedSymbols = exportNames(addedText).filter((name) => new RegExp(`\b${name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\b`).test(candidateContent));
+    if (overlap.length || sharedSymbols.length) evidence.push({ path: candidate, detail: sharedSymbols.length ? `Possible overlapping module; shares exported symbol: ${sharedSymbols[0]}` : `Possible overlapping module; matched token: ${overlap[0]}` });
     if (evidence.length >= 5) break;
   }
   return evidence;
@@ -159,9 +162,28 @@ function packageUsage(name: string, lines: AddedLine[]): AddedLine[] {
   return lines.filter((line) => line.path !== "package.json" && pattern.test(line.text));
 }
 
+function exportNames(text: string): string[] {
+  return [...text.matchAll(/\bexport\s+(?:default\s+)?(?:async\s+)?(?:function|class|const|let|var|type|interface|enum)\s+([A-Za-z_$][A-Za-z0-9_$]*)/g)].map((match) => match[1]);
+}
+
+function removedExportNames(diff: string): Map<string, Set<string>> {
+  const removed = new Map<string, Set<string>>();
+  let file = "unknown";
+  for (const line of diff.split("\n")) {
+    const path = currentFile(line);
+    if (path) file = path;
+    if (line.startsWith("-") && !line.startsWith("---")) {
+      const names = exportNames(line.slice(1));
+      if (names.length) removed.set(file, new Set([...(removed.get(file) ?? []), ...names]));
+    }
+  }
+  return removed;
+}
+
 export function detect(diff: string, cwd?: string): Finding[] {
   const findings: Finding[] = [];
   const lines = addedLines(diff);
+  const removedExports = removedExportNames(diff);
   let oldPackageText = "";
   let newPackageText = "";
   const manifestLines: { text: string; added: boolean }[] = [];
@@ -203,14 +225,17 @@ export function detect(diff: string, cwd?: string): Finding[] {
     const exported = added.text.match(/\bexport\s+(?:default\s+)?(?:async\s+)?(?:function|class|const|let|var|type|interface|enum)\s+([A-Za-z_$][A-Za-z0-9_$]*)/);
     if (exported) {
       const name = exported[1];
+      const changed = removedExports.get(added.path)?.has(name) ?? false;
       findings.push({
         id: stableId("interface", `${added.path}:${added.line}:${name}`),
         kind: "interface",
-        summary: `new exported symbol   ${name}`,
+        summary: `${changed ? "changed" : "new"} exported symbol   ${name}`,
         evidence: [{ path: added.path, line: added.line, detail: `Exports ${name}` }],
         confidence: "medium",
         severity: "medium",
-        limitation: "An export is a possible public interface change; this diff cannot prove whether another package or consumer imports it."
+        limitation: changed
+          ? "This identifies an exported symbol change but cannot prove whether consumers remain compatible."
+          : "An export is a possible public interface change; this diff cannot prove whether another package or consumer imports it."
       });
     }
   }
@@ -239,7 +264,7 @@ export function detect(diff: string, cwd?: string): Finding[] {
   }
   if (cwd) {
     for (const path of addedFiles) {
-      const overlap = moduleOverlapEvidence(path, cwd, changedPaths);
+      const overlap = moduleOverlapEvidence(path, cwd, changedPaths, lines.filter((line) => line.path === path).map((line) => line.text).join("\n"));
       if (overlap.length) findings.push({
         id: stableId("module", path),
         kind: "module",
